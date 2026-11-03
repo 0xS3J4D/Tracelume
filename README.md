@@ -61,7 +61,7 @@ browser opens **http://127.0.0.1:8080**. Then:
 | Android | ✅ ALEAPP · ✅ SQLite deleted-record recovery · ✅ photos and videos (ExifTool) |
 | iPhone | ✅ iLEAPP · ✅ MVT (spyware indicators) · ✅ SQLite recovery · ✅ photos and videos |
 | Disk images (raw, E01) | ✅ The Sleuth Kit, including deleted files and content recovery · 🧪 Plaso |
-| Windows triage (KAPE, Velociraptor) | ✅ RegRipper · ✅ MFTECmd ($MFT, deleted entries) · 🧪 Hayabusa · 🧪 Chainsaw · 🧪 EVTX |
+| Windows triage (KAPE, Velociraptor) | ✅ RegRipper · ✅ MFTECmd ($MFT, deleted entries) · ✅ Chainsaw · ✅ EVTX · 🧪 Hayabusa |
 | Memory images | ✅ Volatility 3 (Windows, Linux, macOS) |
 | Any file | ✅ YARA with your own rules |
 

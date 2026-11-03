@@ -5,8 +5,8 @@
 - Hash-chained audit log with verifier; every action recorded
 - Plugin system running each tool in an isolated, network-less container that sees only its own evidence item
 - Integrations verified in CI: ALEAPP, iLEAPP, The Sleuth Kit (deleted files + content recovery),
-  Volatility 3, RegRipper, MFTECmd, YARA, MVT, ExifTool media, and Tracelume's own SQLite
-  deleted-record recovery. Beta: Plaso, Hayabusa, Chainsaw, EVTX
+  Volatility 3, RegRipper, MFTECmd, Chainsaw, EVTX, YARA, MVT, ExifTool media, and Tracelume's
+  own SQLite deleted-record recovery. Beta: Plaso, Hayabusa
 - Unified UTC timeline, artifact browser with conversation/gallery/map views, global search (Ctrl+K)
 - Read-only SQL workbench over extracted databases
 - Tags, notes, PDF/HTML reports, full case export with checksums
