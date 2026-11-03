@@ -65,5 +65,5 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: sudo apt-get update && sudo apt-get install -y dosfstools mtools
       - run: docker compose --profile tools build
-      - run: cd backend && uv venv -p 3.12 && uv pip install -e '.[dev]'
+      - run: cd backend && uv venv -p 3.12 && uv pip install -e '.[dev]' pillow
       - run: cd backend && TRACELUME_INTEGRATION=1 .venv/bin/pytest -q ../plugins -k integration -rs

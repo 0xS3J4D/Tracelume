@@ -116,3 +116,8 @@ def test_cancel_queued_job(client: TestClient) -> None:
     jobs.execute_job(jid)  # a worker picking it up later must not run it
     assert client.get(f"/api/jobs/{jid}").json()["status"] == "cancelled"
     assert client.post(f"/api/jobs/{jid}/cancel").status_code == 409
+
+
+def test_thumbnail_route_only_serves_hash_named_jpegs(client: TestClient) -> None:
+    assert client.get("/api/jobs/x/thumbs/..%2F..%2Fjob.log").status_code == 404
+    assert client.get("/api/jobs/x/thumbs/" + "a" * 64 + ".jpg").status_code == 404
