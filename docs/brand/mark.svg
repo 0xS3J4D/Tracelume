@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Tracelume">
+  <rect width="64" height="64" rx="14" fill="#0b1220"/>
+  <circle cx="28" cy="28" r="15" fill="none" stroke="#2dd4bf" stroke-width="4"/>
+  <path d="M39 39 L52 52" stroke="#2dd4bf" stroke-width="5" stroke-linecap="round"/>
+  <path d="M19 28 H37" stroke="#e2e8f0" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="21" cy="28" r="2.6" fill="#f59e0b"/>
+  <circle cx="28" cy="28" r="2.6" fill="#e2e8f0"/>
+  <circle cx="35" cy="28" r="2.6" fill="#2dd4bf"/>
+</svg>

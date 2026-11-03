@@ -1,0 +1,5 @@
+﻿Date	MSG ID	Address	Type	Body	Source File
+2024-05-01 09:15:02	1	+4700000001	Received	Hello from the synthetic fixture	/data/data/com.android.providers.telephony/databases/mmssms.db
+2024-05-01 09:16:40	2	+4700000001	Sent	Reply in UTC	/data/data/com.android.providers.telephony/databases/mmssms.db
+Date	MSG ID	Address	Type	Body	Source File
+2024-05-02 18:00:00+02:00	3	+4700000002	Received	Offset honoured	mmssms.db
