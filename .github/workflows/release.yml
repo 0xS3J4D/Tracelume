@@ -18,8 +18,17 @@ jobs:
         with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
       - name: Lower-case registry owner
         run: echo "TRACELUME_REGISTRY=ghcr.io/$(echo '${{ github.repository_owner }}' | tr A-Z a-z)" >> "$GITHUB_ENV"
-      - run: docker compose --profile tools build
-      - run: docker compose --profile tools push
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: App image (amd64 + arm64 for Apple Silicon / ARM Linux)
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 --push \
+            -t "$TRACELUME_REGISTRY/tracelume/app:${GITHUB_REF_NAME#v}" \
+            -t "$TRACELUME_REGISTRY/tracelume/app:0.1.0" .
+      - name: Tool images (amd64; Docker Desktop on Apple Silicon runs them via emulation)
+        run: |
+          docker compose --profile tools build
+          docker compose --profile tools push $(docker compose --profile tools config --services | grep -vE '^(api|worker|db|redis|docker-proxy|ollama)$')
       - uses: softprops/action-gh-release@v2
         with:
           draft: true
