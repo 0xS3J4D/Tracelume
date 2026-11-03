@@ -1,17 +1,19 @@
 # Support Tracelume
 
 Tracelume is free and open source (GPL-3.0). Donations pay for development time,
-test hardware, and keeping up with new Android and iOS versions.
+test hardware (phones, disks), and keeping up with new Android and iOS versions.
 
 ## Crypto
 
-| Coin | Address |
-|---|---|
-| **Monero (XMR)**, private by default | `TODO_XMR_ADDRESS` |
-| **Bitcoin (BTC)**, on-chain (bech32) | `TODO_BTC_ADDRESS` |
+| Coin | Network | Address |
+|---|---|---|
+| **Bitcoin (BTC)** | Bitcoin (bech32) | `bc1q2tvwg0mupr2xf0g2chux4ycp35dvmczwu0pd6u` |
+| **Ethereum (ETH)** | Ethereum mainnet (ERC-20 tokens are also accepted) | `0x7ec1e0C2048338b7109F83Cfde98360399237129` |
+| **Solana (SOL)** | Solana | `6nARTjTQqdsT1vcj9BJTNnfRaaBNV1SuUWGUnRPxECLF` |
 
-Always check the address against this file **in the official repository** before you send
-anything. Maintainers will never DM you a different address.
+Send only the coin and network shown for each address; funds sent on the wrong network may be lost.
+Always check the address against this file **in the official repository**
+(github.com/0xS3J4D/tracelume) before you send anything. Maintainers will never DM you a different address.
 
-## Other ways
-- ⭐ Star the repo, report bugs, write a plugin, or improve the docs. That helps too.
+## Other ways to help
+- ⭐ Star the repository, report bugs, write a plugin, or improve the documentation.
