@@ -46,8 +46,14 @@ def scripted_model(url, headers, payload):  # type: ignore[no-untyped-def]
     if "max_tokens" in payload:
         return {"choices": [{"message": {"content": "OK"}}]}
     if not tool_msgs:
-        call = {"id": "1", "type": "function", "function": {
-            "name": "search_artifacts", "arguments": json.dumps({"types": ["message"]})}}
+        call = {
+            "id": "1",
+            "type": "function",
+            "function": {
+                "name": "search_artifacts",
+                "arguments": json.dumps({"types": ["message"]}),
+            },
+        }
         return {"choices": [{"message": {"content": "", "tool_calls": [call]}}]}
     items = json.loads(tool_msgs[-1]["content"])["items"]
     lines = [f"- {i['title']} [a:{i['id']}]" for i in items[:3]]
