@@ -1,6 +1,5 @@
-# PLAN — Tracelume (open source DFIR analysis platform)
+# Tracelume architecture
 
-> Status: **APPROVED** (2026-11-03). Name: **Tracelume** (*trace* + *lume*, light: shedding light on traces).
 
 ## 1. Goals and non-goals
 
@@ -39,36 +38,22 @@
 
 ```
 .
-├── backend/
-│   ├── app/
-│   │   ├── main.py            # FastAPI app factory
-│   │   ├── config.py          # pydantic-settings
-│   │   ├── db.py              # engine/session, Alembic hook
-│   │   ├── models/            # SQLModel tables (case, evidence, job, artifact, tag, note, audit)
-│   │   ├── schemas/           # API request/response models
-│   │   ├── api/               # routers: cases, evidence, jobs, artifacts, search, timeline, reports
-│   │   ├── services/          # hashing, audit, evidence, jobs, search, reporting
-│   │   ├── plugins/           # plugin base class, registry, docker runner
-│   │   └── worker.py          # RQ entrypoint
-│   ├── migrations/            # Alembic
-│   ├── tests/                 # pytest (unit + API), synthetic fixtures
-│   └── pyproject.toml
-├── plugins/
-│   ├── _template/             # copy-me plugin: plugin.py, Dockerfile, manifest.yaml, tests/
-│   ├── aleapp/
-│   ├── ileapp/
-│   ├── plaso/
-│   ├── volatility3/
-│   └── sleuthkit/
-├── frontend/
-│   ├── src/{pages,components,api,hooks,viewers}/
-│   ├── e2e/                   # Playwright smoke tests
-│   └── package.json
-├── docs/                      # writing-a-plugin.md, architecture.md, test-data.md, chain-of-custody.md
-├── docker-compose.yml
-├── .github/workflows/ci.yml
-├── README.md  LICENSE  CONTRIBUTING.md  SECURITY.md  CODE_OF_CONDUCT.md  CREDITS.md
-└── PLAN.md
+├── backend/tracelume/
+│   ├── api/            routes (cases, evidence, jobs), workspace (timeline, search, tags, notes,
+│   │                   reports, SQL), assistant_api
+│   ├── plugins/        plugin base class, registry, isolated Docker runner
+│   ├── parsers/        shared parsers (xLEAPP TSV, time helpers)
+│   ├── migrations/     Alembic schema migrations (run at startup)
+│   ├── templates/      report template
+│   ├── audit.py  evidence.py  jobs.py  report.py  export.py  sqlbench.py  assistant.py  security.py
+│   └── main.py / worker.py
+├── plugins/<tool>/     plugin.py + Dockerfile + manifest.yaml + tests/ (one folder per tool)
+│   └── _shared/        helpers copied into tool images (safe archive extraction)
+├── frontend/src/       React UI (pages, case tabs, viewers, command palette)
+├── docs/               user guide, architecture, assistant, plugins, chain of custody, brand
+├── scripts/            check.sh, new_migration.sh, synthetic demo data
+├── docker-compose.yml  tracelume / tracelume.ps1 (launchers)
+└── .github/workflows/  ci.yml (lint, types, tests, e2e, tool images), release.yml
 ```
 
 ## 4. Data model
@@ -121,18 +106,16 @@ class Plugin(ABC):
 
 **ALEAPP mapping:** ALEAPP writes TSV and timeline SQLite output per artifact module. The parser reads ALEAPP's `_TSV Exports/*.tsv`, maps known modules (SMS/MMS, call logs, contacts, Chrome history, location sources, app usage) to typed artifacts, and maps all other modules to `event` with the full row stored in `data`.
 
-## 7. Milestones
+## 7. Status and roadmap
 
-| # | Content | Status |
-|---|---|---|
-| **M1 MVP** | Backend, data model, hashed read-only ingest, audit chain, plugin system, **ALEAPP end to end**, minimal UI, compose, CI | ✅ done (verified with real ALEAPP v3.6.0) |
-| **M2 Navigation core** | iLEAPP; **unified timeline** (histogram plus brush to zoom, filters by type, source, evidence and time range); Postgres FTS global search; **command palette (Ctrl+K)** and full keyboard map | |
-| **M3 Viewers** | Conversation view (threads, participants), media gallery (offline thumbnails, EXIF), **offline map** (MapLibre with a bundled tile pack and MBTiles import), contact and call views | |
-| **M4 Deleted data & SQL** | The Sleuth Kit plugin with a file system browser (including **deleted entries** from `fls -d` and recovered content via `icat`); **SQLite deep parser**: WAL frames, freelist pages and unallocated cells carved into `recovered_record` artifacts and marked as "recovered"; **read-only SQL workbench** (opens *copies* of databases extracted from evidence, plus the case DB through a read-only role, with saved queries); hex viewer | |
-| **M5 Investigation workspace** | Tags, bookmarks, notes, **investigation plan board** (hypotheses → tasks → linked artifacts), **entity index** (phone numbers, emails, accounts and device IDs merged across tools, with a link graph), HTML/PDF reports | |
-| **M6 AI assistant (local-first)** | See §11 | |
-| **M7 More engines** | Plaso, Volatility 3, then RegRipper, Hayabusa, Chainsaw, bulk_extractor, ExifTool, YARA, MVT, unfurl, evtx, MFTECmd; known-file hash sets (NSRL) to hide known-good files and flag known-bad ones | |
-| **M8 Production** | Local accounts and roles, a portable **case bundle export/import** (with hashes and audit chain), per-item evidence mounts, COPY-based ingest for more than 10 million artifacts, signed release images, offline installer bundle | |
+Shipped in 0.1.0: everything in the CHANGELOG. Next:
+
+| Area | Planned |
+|---|---|
+| Multi-user labs | local accounts, roles, per-case access |
+| Scale | partitioned artifact table and COPY ingest for 10M+ artifacts; Postgres full-text and vector search |
+| More sources | known-file hash sets (NSRL), more mobile app parsers, browser artifact enrichment |
+| Packaging | signed images, offline installer bundle for air-gapped labs |
 
 ## 8. CI
 
@@ -146,7 +129,7 @@ GitHub Actions jobs:
 
 Real evidence is never committed. Fixtures are small, synthetic and generated by scripts in `backend/tests/fixtures/`. `docs/test-data.md` points to NIST CFReDS and Josh Hickman's public Android and iOS images.
 
-## 10. Decisions (resolved)
+## 10. Key decisions
 
 1. **Name:** Tracelume. Python package `tracelume`, Docker images `tracelume/*`.
 2. **Additional tools (M6):** RegRipper, Hayabusa, Chainsaw, bulk_extractor, ExifTool, YARA, MVT, unfurl, evtx_dump, MFTECmd (Eric Zimmerman).

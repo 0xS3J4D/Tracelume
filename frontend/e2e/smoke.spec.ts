@@ -62,7 +62,7 @@ test("case → evidence → ALEAPP job → artifacts → audit", async ({ page }
   await expect(page.getByText("Messages found")).toBeVisible();
   await page.getByTitle("Open cited artifact").first().click();
   await expect(page.getByLabel("Artifact details")).toContainText("message");
-  await page.getByText(/tool steps/).click();
+  await page.getByText(/tool steps?/).click();
   await expect(page.getByText("search_artifacts", { exact: false }).first()).toBeVisible();
 
   // SQL tab empty state
