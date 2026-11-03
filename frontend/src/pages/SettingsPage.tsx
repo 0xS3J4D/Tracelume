@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { api, type Settings } from "../api";
+import { api, fmtBytes, fmtUtc, type BackupState, type Settings } from "../api";
 import { ErrorNote, PageHeader } from "../components/ui";
 
 export default function SettingsPage() {
@@ -9,6 +9,13 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState<string | null>(null);
   const [test, setTest] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [bk, setBk] = useState<BackupState | null>(null);
+  useEffect(() => {
+    const load = () => api.backups().then(setBk).catch(() => undefined);
+    load();
+    const t = setInterval(load, 2000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     api.settings().then((x) => { setS(x); setExaminer(x.examiner.name); setAi(x.assistant); })
@@ -39,6 +46,35 @@ export default function SettingsPage() {
             <input id="ex" className="input" value={examiner} onChange={(e) => setExaminer(e.target.value)} placeholder="e.g. J. Examiner" /></div>
           <button className="btn-primary">Save</button>
         </form>
+
+        <section className="card space-y-3 p-4" aria-labelledby="bk-h">
+          <h2 id="bk-h" className="font-medium text-slate-100">Backups</h2>
+          <p className="text-sm text-slate-400">
+            A backup contains the case database, all evidence and all analysis results, with a SHA-256 checksum.
+            Files are written to the <code className="rounded bg-ink-950 px-1">backups</code> folder next to Tracelume.
+            Restore with <code className="rounded bg-ink-950 px-1">./tracelume restore backups/&lt;file&gt;</code>; this replaces the current data.
+          </p>
+          <div className="flex items-center gap-3">
+            <button type="button" className="btn-primary" disabled={bk?.status.running}
+              onClick={async () => { try { await api.createBackup(); setBk(await api.backups()); } catch (e) { setError((e as Error).message); } }}>
+              {bk?.status.running ? "Creating backup…" : "Create backup now"}
+            </button>
+            {bk?.status.error && <span role="alert" className="text-sm text-red-300">Backup failed: {bk.status.error}</span>}
+          </div>
+          {bk && bk.backups.length > 0 && (
+            <table className="w-full text-left text-xs">
+              <thead className="text-slate-400"><tr><th className="py-1">File</th><th>Created (UTC)</th><th>Size</th><th>SHA-256</th></tr></thead>
+              <tbody>
+                {bk.backups.map((b) => (
+                  <tr key={b.name} className="border-t border-ink-700">
+                    <td className="py-1.5 font-mono">{b.name}</td><td className="font-mono">{fmtUtc(b.created)}</td>
+                    <td>{fmtBytes(b.size)}</td><td className="hash max-w-56 truncate" title={b.sha256 ?? ""}>{b.sha256}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
 
         <form onSubmit={saveAi} className="card space-y-3 p-4">
           <h2 className="font-medium text-slate-100">Case assistant (AI)</h2>

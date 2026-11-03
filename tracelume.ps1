@@ -5,6 +5,7 @@ $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 $Port = if ($env:TRACELUME_PORT) { $env:TRACELUME_PORT } else { "8080" }
 $Url = "http://127.0.0.1:$Port"
+New-Item -ItemType Directory -Force import, backups | Out-Null
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Write-Error "Install Docker Desktop first: https://www.docker.com/products/docker-desktop/"; exit 1 }
 docker info *> $null; if ($LASTEXITCODE -ne 0) { Write-Error "Docker Desktop is not running. Start it and try again."; exit 1 }
@@ -38,14 +39,18 @@ switch ($Command) {
     docker compose --profile ai up -d ollama
     Write-Host "Local model ready. In Tracelume -> Settings, set the model to: $model"
   }
-  "backup" {
-    New-Item -ItemType Directory -Force backups | Out-Null
-    $stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMddTHHmmssZ")
-    docker compose exec -T db pg_dump -U tracelume -Fc tracelume -f "/tmp/db.dump"
-    docker compose cp "db:/tmp/db.dump" "backups/db-$stamp.dump"
-    docker run --rm -v tracelume_evidence:/e:ro -v tracelume_workspace:/w:ro -v "${PWD}/backups:/b" alpine:3.20 tar czf "/b/data-$stamp.tgz" -C / e w
-    Get-FileHash "backups/db-$stamp.dump", "backups/data-$stamp.tgz" -Algorithm SHA256 | Format-Table -AutoSize | Out-File "backups/SHA256SUMS-$stamp.txt"
-    Write-Host "Backup written to backups\"
+  "backup" { docker compose exec -T api python -m tracelume.backup create; Write-Host "Backup written to .\backups" }
+  "restore" {
+    if (-not (Test-Path $Arg)) { Write-Error "usage: .\tracelume.ps1 restore backups\<file>.tar.gz"; exit 1 }
+    $ok = Read-Host "This REPLACES all current data. Type RESTORE to continue"
+    if ($ok -ne "RESTORE") { exit 1 }
+    docker compose down
+    docker volume rm tracelume_db tracelume_evidence tracelume_workspace *> $null
+    docker compose up -d db redis
+    Copy-Item $Arg backups\ -ErrorAction SilentlyContinue
+    if (Test-Path "$Arg.sha256") { Copy-Item "$Arg.sha256" backups\ -ErrorAction SilentlyContinue }
+    docker compose run --rm api python -m tracelume.backup restore "/backups/$(Split-Path $Arg -Leaf)"
+    docker compose up -d
   }
-  default { Write-Host "usage: .\tracelume.ps1 start|stop|status|logs|tools|ai [model]|backup|update|build"; exit 2 }
+  default { Write-Host "usage: .\tracelume.ps1 start|stop|status|logs|tools|ai [model]|backup|restore <file>|update|build"; exit 2 }
 }

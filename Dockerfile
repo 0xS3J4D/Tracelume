@@ -18,7 +18,7 @@ COPY backend/tracelume ./backend/tracelume
 RUN pip install --no-cache-dir ./backend
 COPY plugins ./plugins
 COPY --from=ui /ui/dist /usr/local/lib/python3.12/site-packages/tracelume/static
-RUN useradd -r -u 10001 tracelume && mkdir -p /data/evidence /data/workspace /import && chown -R tracelume /data
+RUN useradd -r -u 10001 tracelume && mkdir -p /data/evidence /data/workspace /import /backups && chown -R tracelume /data /backups
 USER tracelume
 ENV TRACELUME_PLUGINS_DIR=/app/plugins \
     TRACELUME_DATABASE_URL=sqlite:////data/tracelume.db \

@@ -1,24 +1,4 @@
-import io
-
-import pytest
 from fastapi.testclient import TestClient
-
-from tests.test_core import PAYLOAD
-
-
-@pytest.fixture
-def populated(client: TestClient) -> str:
-    case_id = client.post("/api/cases", json={"name": "WS case"}).json()["id"]
-    ev = client.post(
-        f"/api/cases/{case_id}/evidence",
-        files={"file": ("dump.zip", io.BytesIO(PAYLOAD))},
-        data={"kind": "android_fs"},
-    ).json()
-    job = client.post(
-        f"/api/cases/{case_id}/jobs", json={"evidence_id": ev["id"], "plugin": "aleapp"}
-    ).json()
-    assert client.get(f"/api/jobs/{job['id']}").json()["status"] == "succeeded"
-    return str(case_id)
 
 
 def test_histogram(client: TestClient, populated: str) -> None:

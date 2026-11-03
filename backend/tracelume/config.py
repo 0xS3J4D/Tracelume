@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     evidence_dir: Path = Path("./data/evidence")
     workspace_dir: Path = Path("./data/workspace")
     import_dir: Path = Path("./data/import")
+    backups_dir: Path = Path("./data/backups")
     plugins_dir: Path = Path(__file__).resolve().parents[2] / "plugins"
     examiner: str = "examiner"
     # Registry prefix for tool images: "ghcr.io/0xs3j4d" -> ghcr.io/0xs3j4d/tracelume/aleapp

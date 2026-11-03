@@ -14,12 +14,14 @@ x-app: &app
     TRACELUME_RUNNER: docker
     TRACELUME_EXAMINER: ${TRACELUME_EXAMINER:-examiner}
     TRACELUME_IMAGE_REGISTRY: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}
+    TRACELUME_BACKUPS_DIR: /backups
     TRACELUME_EVIDENCE_VOLUME: tracelume_evidence
     TRACELUME_WORKSPACE_VOLUME: tracelume_workspace
   volumes:
     - evidence:/data/evidence
     - workspace:/data/workspace
     - ${TRACELUME_IMPORT_DIR:-./import}:/import:ro
+    - ${TRACELUME_BACKUP_DIR:-./backups}:/backups
   depends_on:
     db: { condition: service_healthy }
     redis: { condition: service_started }
