@@ -1,0 +1,32 @@
+name: Release
+# Push a tag like v0.1.0 to build and publish every image to GHCR and draft a GitHub release.
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    env:
+      TRACELUME_REGISTRY: ghcr.io/${{ github.repository_owner }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: "${{ github.actor }}", password: "${{ secrets.GITHUB_TOKEN }}" }
+      - name: Lower-case registry owner
+        run: echo "TRACELUME_REGISTRY=ghcr.io/$(echo '${{ github.repository_owner }}' | tr A-Z a-z)" >> "$GITHUB_ENV"
+      - run: docker compose --profile tools build
+      - run: docker compose --profile tools push
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          generate_release_notes: true
+          body: |
+            ## Install
+            1. Install Docker Desktop (Windows/macOS) or Docker Engine (Linux).
+            2. Download **Source code (zip)** below and unpack it.
+            3. Run `./tracelume tools` once, then `./tracelume start`
+               (Windows: `powershell -ExecutionPolicy Bypass -File .\tracelume.ps1 tools`, then `start`).
