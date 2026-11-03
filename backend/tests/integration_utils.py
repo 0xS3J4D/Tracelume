@@ -18,6 +18,10 @@ def run_tool(image: str, argv: list[str], evidence: Path, output: Path) -> str:
     image = f"{registry}/{image}" if registry else image
     output.mkdir(parents=True, exist_ok=True)
     output.chmod(0o777)
+    # Tool images run as an unprivileged user; make the evidence readable like the app stores it.
+    evidence.parent.chmod(0o755)
+    if evidence.is_file():
+        evidence.chmod(0o644)
     proc = subprocess.run(
         ["docker", "run", "--rm", "--network", "none", "--cap-drop", "ALL",
          "--security-opt", "no-new-privileges",
