@@ -1,0 +1,49 @@
+[project]
+name = "tracelume"
+version = "0.1.0"
+description = "Open source DFIR analysis platform"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "sqlmodel>=0.0.22",
+  "psycopg[binary]>=3.2",
+  "pydantic-settings>=2.4",
+  "python-multipart>=0.0.9",
+  "redis>=5.0",
+  "rq>=1.16",
+  "docker>=7.1",
+  "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.6", "mypy>=1.11", "types-PyYAML", "types-redis"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tracelume"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "SIM"]
+ignore = ["S101", "S603", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "../plugins"]
+addopts = "--import-mode=importlib"
