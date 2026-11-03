@@ -9,8 +9,12 @@
   .btn { @apply inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50; }
   .btn-primary { @apply btn bg-accent text-ink-950 hover:bg-accent-strong; }
   .btn-ghost { @apply btn text-slate-300 hover:bg-ink-800; }
-  .input { @apply w-full rounded-md border border-ink-700 bg-ink-900 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-500; }
+  .input { @apply w-full rounded-md border border-ink-700 bg-ink-900 px-3 py-1.5 text-sm text-slate-100 placeholder:text-slate-400; }
   .card { @apply rounded-lg border border-ink-700 bg-ink-850; }
   .label { @apply mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400; }
   .hash { @apply font-mono text-xs break-all text-slate-300; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }

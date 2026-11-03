@@ -59,7 +59,7 @@ export default function TimelineTab({ caseId, types }: { caseId: string; types: 
           <div className="mb-2 flex flex-wrap items-center gap-1.5">
             {types.map((t) => (
               <button key={t} onClick={() => toggleType(t)} aria-pressed={!hidden.has(t)}
-                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs ${hidden.has(t) ? "border-ink-700 text-slate-500" : "border-ink-700 text-slate-200"}`}>
+                className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs ${hidden.has(t) ? "border-ink-700 text-slate-400" : "border-ink-700 text-slate-200"}`}>
                 <span className="h-2 w-2 rounded-full" style={{ background: hidden.has(t) ? "transparent" : typeColor(t), border: `1px solid ${typeColor(t)}` }} />{typeLabel(t)}
               </button>
             ))}
@@ -88,7 +88,7 @@ export default function TimelineTab({ caseId, types }: { caseId: string; types: 
             })}
             {drag && <rect x={Math.min(drag.x0, drag.x1)} y={0} width={Math.abs(drag.x1 - drag.x0)} height={H} fill="#2dd4bf" fillOpacity={0.15} stroke="#2dd4bf" />}
           </svg>
-          <p className="mt-1 text-[11px] text-slate-500">Drag across the chart to zoom. All times UTC.</p>
+          <p className="mt-1 text-xs text-slate-400">Drag across the chart to zoom. All times UTC.</p>
         </div>
         <ol className="min-h-0 flex-1 overflow-auto" aria-label="Events">
           {items.items.map((a) => (
@@ -101,7 +101,7 @@ export default function TimelineTab({ caseId, types }: { caseId: string; types: 
               </button>
             </li>
           ))}
-          {items.total > items.items.length && <li className="p-3 text-center text-xs text-slate-500">Showing first {items.items.length} of {items.total}. Zoom in to see more.</li>}
+          {items.total > items.items.length && <li className="p-3 text-center text-xs text-slate-400">Showing first {items.items.length} of {items.total}. Zoom in to see more.</li>}
           {!items.total && <li className="p-6 text-sm text-slate-400">No timestamped events in this range.</li>}
         </ol>
       </section>

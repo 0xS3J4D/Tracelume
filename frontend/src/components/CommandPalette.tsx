@@ -61,24 +61,24 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
         className="w-full max-w-2xl overflow-hidden rounded-xl border border-ink-700 bg-ink-900 shadow-2xl">
         <input ref={input} value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey}
           aria-label="Search cases, views and artifacts" placeholder="Search everything — cases, views, artifact content…"
-          className="w-full border-b border-ink-700 bg-transparent px-4 py-3 text-base text-slate-100 outline-none placeholder:text-slate-500" />
+          className="w-full border-b border-ink-700 bg-transparent px-4 py-3 text-base text-slate-100 outline-none placeholder:text-slate-400" />
         <ul role="listbox" className="max-h-[50vh] overflow-auto py-1">
           {items.map((it, i) => {
             const header = it.group !== lastGroup ? (lastGroup = it.group) : null;
             return (
               <li key={it.id + i}>
-                {header && <p className="px-4 pb-1 pt-2 text-[11px] uppercase tracking-wide text-slate-500">{header}</p>}
+                {header && <p className="px-4 pb-1 pt-2 text-xs uppercase tracking-wide text-slate-400">{header}</p>}
                 <button role="option" aria-selected={i === active} onMouseEnter={() => setActive(i)} onClick={it.go}
                   className={`flex w-full items-baseline gap-3 px-4 py-2 text-left text-sm ${i === active ? "bg-ink-800 text-slate-100" : "text-slate-300"}`}>
                   <span className="truncate">{it.label}</span>
-                  {it.hint && <span className="ml-auto shrink-0 text-xs text-slate-500">{it.hint}</span>}
+                  {it.hint && <span className="ml-auto shrink-0 text-xs text-slate-400">{it.hint}</span>}
                 </button>
               </li>
             );
           })}
-          {q.trim().length >= 2 && !hits.length && <li className="px-4 py-3 text-sm text-slate-500">No artifact matches yet…</li>}
+          {q.trim().length >= 2 && !hits.length && <li className="px-4 py-3 text-sm text-slate-400">No artifact matches yet…</li>}
         </ul>
-        <p className="border-t border-ink-700 px-4 py-2 text-[11px] text-slate-500">↑↓ navigate · Enter open · Esc close</p>
+        <p className="border-t border-ink-700 px-4 py-2 text-xs text-slate-400">↑↓ navigate · Enter open · Esc close</p>
       </div>
     </div>
   );

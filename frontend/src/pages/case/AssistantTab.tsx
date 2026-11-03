@@ -68,7 +68,7 @@ export default function AssistantTab({ caseId }: { caseId: string }) {
             <div key={m.id} className="flex justify-end"><p className="max-w-[75%] rounded-2xl bg-accent/15 px-3 py-2 text-sm text-slate-100">{m.content}</p></div>
           ) : (
             <article key={m.id} className="max-w-[85%] rounded-xl border border-ink-700 bg-ink-850 p-3">
-              <p className="mb-1 text-[10px] uppercase tracking-wide text-slate-500">Assistant · AI-generated · {m.model}</p>
+              <p className="mb-1 text-xs uppercase tracking-wide text-slate-400">Assistant · AI-generated · {m.model}</p>
               <RichText text={m.content} onCite={async (id) => setCited(await api.artifact(id))} />
               {m.steps.length > 0 && (
                 <details className="mt-2 text-xs text-slate-400">
@@ -77,7 +77,7 @@ export default function AssistantTab({ caseId }: { caseId: string }) {
                     {m.steps.map((s, i) => (
                       <li key={i} className="rounded bg-ink-950 p-2 font-mono">
                         <span className="text-accent">{s.tool}</span>({JSON.stringify(s.args)})
-                        <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap break-all text-slate-500">{typeof s.result === "string" ? s.result : JSON.stringify(s.result, null, 1)}</pre>
+                        <pre className="mt-1 max-h-40 overflow-auto whitespace-pre-wrap break-all text-slate-400">{typeof s.result === "string" ? s.result : JSON.stringify(s.result, null, 1)}</pre>
                       </li>
                     ))}
                   </ol>

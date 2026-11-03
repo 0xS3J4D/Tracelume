@@ -31,7 +31,7 @@ export default function Layout() {
         <div className="px-4 py-4"><img src={logo} alt="Tracelume" className="h-7" /></div>
         <button onClick={() => setPalette(true)}
           className="mx-2 mb-3 flex items-center gap-2 rounded-md border border-ink-700 px-3 py-1.5 text-left text-sm text-slate-400 hover:border-slate-500">
-          Search… <kbd className="ml-auto rounded bg-ink-800 px-1.5 text-[10px]">Ctrl K</kbd>
+          Search… <kbd className="ml-auto rounded bg-ink-800 px-1.5 text-xs">Ctrl K</kbd>
         </button>
         <ul className="flex-1 space-y-1 px-2 text-sm">
           <li>
@@ -47,8 +47,8 @@ export default function Layout() {
             </NavLink>
           </li>
         </ul>
-        <button onClick={() => setHelp(true)} className="mx-4 mb-1 text-left text-[11px] text-slate-500 hover:text-slate-300">Keyboard shortcuts <kbd>?</kbd></button>
-        <p className="px-4 py-3 text-[11px] leading-snug text-slate-500">
+        <button onClick={() => setHelp(true)} className="mx-4 mb-1 text-left text-xs text-slate-400 hover:text-slate-300">Keyboard shortcuts <kbd>?</kbd></button>
+        <p className="px-4 py-3 text-xs leading-snug text-slate-400">
           Offline · local only<br />Use only on data you are authorised to examine.
         </p>
       </nav>
