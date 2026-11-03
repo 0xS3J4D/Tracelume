@@ -57,6 +57,28 @@ const json = (method: string, body: unknown): RequestInit => ({
   method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
 });
 
+export interface Tag { id: string; case_id: string; name: string; color: string; count?: number }
+export interface Note {
+  id: string; case_id: string; artifact_id: string | null; author: string; body: string; created_at: string;
+}
+export interface Bucket { start: string; end: string; count: number; by_type: Record<string, number> }
+export interface Histogram { min: string | null; max: string | null; buckets: Bucket[] }
+export interface SearchHit { artifact: Artifact; case_name: string }
+export type ArtifactQuery = {
+  type?: string[]; plugin?: string[]; q?: string; tag?: string; since?: string; until?: string;
+  order?: "asc" | "desc"; limit?: number; offset?: number; buckets?: number;
+};
+
+function qs(params: ArtifactQuery | Record<string, unknown>): string {
+  const p = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === "" || v === null) continue;
+    if (Array.isArray(v)) v.forEach((x) => p.append(k, String(x)));
+    else p.set(k, String(v));
+  }
+  return p.toString();
+}
+
 export const api = {
   cases: () => req<Case[]>("/cases"),
   createCase: (b: { name: string; number?: string; description?: string }) =>
@@ -69,11 +91,24 @@ export const api = {
   job: (id: string) => req<Job>(`/jobs/${id}`),
   createJob: (caseId: string, evidence_id: string, plugin: string) =>
     req<Job>(`/cases/${caseId}/jobs`, json("POST", { evidence_id, plugin })),
-  artifacts: (caseId: string, params: Record<string, string | number | undefined>) => {
-    const qs = new URLSearchParams();
-    for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== "") qs.set(k, String(v));
-    return req<{ total: number; items: Artifact[] }>(`/cases/${caseId}/artifacts?${qs}`);
-  },
+  artifacts: (caseId: string, params: ArtifactQuery) =>
+    req<{ total: number; items: Artifact[] }>(`/cases/${caseId}/artifacts?${qs(params)}`),
+  artifact: (id: string) => req<Artifact>(`/artifacts/${id}`),
+  histogram: (caseId: string, params: ArtifactQuery) =>
+    req<Histogram>(`/cases/${caseId}/timeline/histogram?${qs(params)}`),
+  search: (q: string) => req<SearchHit[]>(`/search?${qs({ q, limit: 30 })}`),
+  tags: (caseId: string) => req<Tag[]>(`/cases/${caseId}/tags`),
+  createTag: (caseId: string, name: string, color?: string) =>
+    req<Tag>(`/cases/${caseId}/tags`, json("POST", { name, color })),
+  artifactTags: (id: string) => req<Tag[]>(`/artifacts/${id}/tags`),
+  tagArtifact: (id: string, tagId: string) =>
+    fetch(`/api/artifacts/${id}/tags/${tagId}`, { method: "PUT" }),
+  untagArtifact: (id: string, tagId: string) =>
+    fetch(`/api/artifacts/${id}/tags/${tagId}`, { method: "DELETE" }),
+  notes: (caseId: string, artifactId?: string) =>
+    req<Note[]>(`/cases/${caseId}/notes?${qs({ artifact_id: artifactId })}`),
+  createNote: (caseId: string, body: string, artifactId?: string) =>
+    req<Note>(`/cases/${caseId}/notes`, json("POST", { body, artifact_id: artifactId })),
   audit: (caseId: string) => req<AuditEntry[]>(`/cases/${caseId}/audit`),
 };
 
