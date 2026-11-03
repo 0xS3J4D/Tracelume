@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api, fmtUtc, type Artifact, type Histogram, type Tag } from "../../api";
 import ArtifactDetail from "../../components/ArtifactDetail";
-import { typeColor } from "../../components/typeColors";
+import { typeColor, typeLabel } from "../../components/typeColors";
 
 const W = 1000, H = 140, PAD = 4;
 
@@ -60,7 +60,7 @@ export default function TimelineTab({ caseId, types }: { caseId: string; types: 
             {types.map((t) => (
               <button key={t} onClick={() => toggleType(t)} aria-pressed={!hidden.has(t)}
                 className={`flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs ${hidden.has(t) ? "border-ink-700 text-slate-500" : "border-ink-700 text-slate-200"}`}>
-                <span className="h-2 w-2 rounded-full" style={{ background: hidden.has(t) ? "transparent" : typeColor(t), border: `1px solid ${typeColor(t)}` }} />{t}
+                <span className="h-2 w-2 rounded-full" style={{ background: hidden.has(t) ? "transparent" : typeColor(t), border: `1px solid ${typeColor(t)}` }} />{typeLabel(t)}
               </button>
             ))}
             <span className="ml-auto text-xs text-slate-400">
@@ -96,7 +96,7 @@ export default function TimelineTab({ caseId, types }: { caseId: string; types: 
               <button onClick={() => setSelected(a)}
                 className={`grid w-full grid-cols-[11rem_7rem_1fr] items-center gap-3 border-b border-ink-700 px-4 py-1.5 text-left text-sm ${selected?.id === a.id ? "bg-ink-800" : "hover:bg-ink-850"}`}>
                 <span className="font-mono text-xs">{fmtUtc(a.timestamp)}</span>
-                <span className="flex items-center gap-1.5 text-xs"><span className="h-2 w-2 rounded-full" style={{ background: typeColor(a.type) }} />{a.type}</span>
+                <span className="flex items-center gap-1.5 text-xs"><span className="h-2 w-2 shrink-0 rounded-full" style={{ background: typeColor(a.type) }} /><span className="truncate">{typeLabel(a.type)}</span></span>
                 <span className="truncate">{a.title}</span>
               </button>
             </li>
