@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, fmtBytes, fmtUtc, type Artifact, type Note, type Tag } from "../api";
+import { typeLabel } from "./typeColors";
 
 /** Right-hand detail panel: provenance, tags, notes and raw data. */
 export default function ArtifactDetail({
@@ -61,7 +62,7 @@ export default function ArtifactDetail({
   return (
     <div className="space-y-5 p-4">
       <div>
-        <p className="label">{artifact.type}</p>
+        <p className="label">{typeLabel(artifact.type)}</p>
         <h2 className="break-words font-medium text-slate-100">{artifact.title}</h2>
       </div>
       <dl className="grid grid-cols-[6rem_1fr] gap-x-2 gap-y-1 text-xs">
@@ -72,6 +73,16 @@ export default function ArtifactDetail({
         <dt className="text-slate-400">Artifact ID</dt><dd className="break-all font-mono text-slate-500">{artifact.id}</dd>
       </dl>
 
+      {Array.isArray(artifact.data.possible_times_utc) && artifact.data.possible_times_utc.length > 0 && (
+        <div className="rounded-md border border-ink-700 p-3 text-xs">
+          <p className="mb-1 text-slate-400">Values that decode as plausible timestamps (verify the unit in the app's schema):</p>
+          <ul className="space-y-0.5 font-mono">
+            {(artifact.data.possible_times_utc as { column: number; unit: string; utc: string }[]).map((t, i) => (
+              <li key={i}>col {t.column}: {fmtUtc(t.utc)} <span className="text-slate-500">({t.unit})</span></li>
+            ))}
+          </ul>
+        </div>
+      )}
       {artifact.type === "media" && typeof artifact.data.thumb === "string" && (
         <img src={`/api/jobs/${artifact.job_id}/thumbs/${artifact.data.thumb}`} alt={artifact.title}
           className="max-h-72 w-full rounded-md border border-ink-700 bg-ink-950 object-contain" />

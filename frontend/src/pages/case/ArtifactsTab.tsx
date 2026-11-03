@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api, fmtUtc, type Artifact, type Tag } from "../../api";
 import ArtifactDetail from "../../components/ArtifactDetail";
+import { typeColor, typeLabel } from "../../components/typeColors";
 import { ErrorNote } from "../../components/ui";
 import Conversation from "../../components/viewers/Conversation";
 import LocationMap from "../../components/viewers/LocationMap";
@@ -67,7 +68,7 @@ export default function ArtifactsTab({ caseId, types }: { caseId: string; types:
           <label className="sr-only" htmlFor="art-type">Type</label>
           <select id="art-type" className="input w-40" value={type} onChange={(e) => set("type", e.target.value)}>
             <option value="">All types</option>
-            {types.map((t) => <option key={t} value={t}>{t}</option>)}
+            {types.map((t) => <option key={t} value={t}>{typeLabel(t)}</option>)}
           </select>
           <label className="sr-only" htmlFor="art-tag">Tag</label>
           <select id="art-tag" className="input w-40" value={tag} onChange={(e) => set("tag", e.target.value)}>
@@ -98,7 +99,7 @@ export default function ArtifactsTab({ caseId, types }: { caseId: string; types:
                     <tr key={a.id} data-row={i} onClick={() => setSel(i)} aria-selected={i === sel}
                       className={`cursor-pointer border-t border-ink-700 ${i === sel ? "bg-ink-800" : "hover:bg-ink-850"}`}>
                       <td className="whitespace-nowrap px-3 py-1.5 font-mono text-xs">{fmtUtc(a.timestamp)}</td>
-                      <td className="text-xs text-accent">{a.type}</td>
+                      <td className="whitespace-nowrap pr-3 text-xs" style={{ color: typeColor(a.type) }}>{typeLabel(a.type)}</td>
                       <td className="max-w-xl truncate">{a.title}</td>
                       <td className="pr-3 text-xs text-slate-400">{a.source_plugin}</td>
                     </tr>
