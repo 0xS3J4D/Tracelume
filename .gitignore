@@ -19,3 +19,5 @@ backend/tracelume/static/
 *.mem
 *.vmem
 *.aff4
+import/*
+!import/.gitkeep

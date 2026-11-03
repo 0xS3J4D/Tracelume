@@ -1,0 +1,74 @@
+# Tracelume runs entirely on your own machine.
+#   docker compose up -d --build      → http://127.0.0.1:8080
+# The UI is bound to 127.0.0.1 only. Backend services have no outbound network,
+# and tool containers run with --network none.
+name: tracelume
+
+x-app: &app
+  build: .
+  image: tracelume/app:0.1.0
+  environment: &env
+    TRACELUME_DATABASE_URL: postgresql+psycopg://tracelume:tracelume@db:5432/tracelume
+    TRACELUME_REDIS_URL: redis://redis:6379/0
+    TRACELUME_JOB_QUEUE: rq
+    TRACELUME_RUNNER: docker
+    TRACELUME_EXAMINER: ${TRACELUME_EXAMINER:-examiner}
+    TRACELUME_EVIDENCE_VOLUME: tracelume_evidence
+    TRACELUME_WORKSPACE_VOLUME: tracelume_workspace
+  volumes:
+    - evidence:/data/evidence
+    - workspace:/data/workspace
+    - ${TRACELUME_IMPORT_DIR:-./import}:/import:ro
+  depends_on:
+    db: { condition: service_healthy }
+    redis: { condition: service_started }
+
+services:
+  api:
+    <<: *app
+    ports: ["127.0.0.1:${TRACELUME_PORT:-8080}:8000"]
+    networks: [backend, frontend]
+
+  worker:
+    <<: *app
+    command: ["python", "-m", "tracelume.worker"]
+    environment:
+      <<: *env
+      DOCKER_HOST: tcp://docker-proxy:2375
+    networks: [backend]
+
+  # Narrow Docker API access: the worker may only create/start/inspect/remove containers.
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    environment: { CONTAINERS: 1, POST: 1, IMAGES: 1, VOLUMES: 0, NETWORKS: 0, EXEC: 0, DISABLE_IPV6: 1 }
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock:ro"]
+    networks: [backend]
+
+  db:
+    image: postgres:16-alpine
+    environment: { POSTGRES_USER: tracelume, POSTGRES_PASSWORD: tracelume, POSTGRES_DB: tracelume }
+    volumes: ["db:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracelume"]
+      interval: 3s
+      retries: 20
+    networks: [backend]
+
+  redis:
+    image: redis:7-alpine
+    networks: [backend]
+
+  # Tool images. Built once with: docker compose --profile tools build
+  aleapp:
+    profiles: ["tools"]
+    build: ./plugins/aleapp
+    image: tracelume/aleapp:0.1.0
+
+networks:
+  backend: { internal: true }   # no route to the internet
+  frontend: {}
+
+volumes:
+  db:
+  evidence: { name: tracelume_evidence }
+  workspace: { name: tracelume_workspace }
