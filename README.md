@@ -46,40 +46,40 @@ browser opens **http://127.0.0.1:8080**. Then:
 4. Open **Artifacts → Recovered (deleted) records**, then try the **Timeline**, the **Map**, the **SQL** tab and **Export PDF report**.
 
 ## What works today
-✅ verified in CI on real tool images · 🧪 beta (works, not yet tested on real devices or models) · 🗺 planned
+Items marked *(beta)* work, but have not yet been tested on real devices or with real AI models.
 
 **Evidence and integrity**
-- ✅ SHA-256 and MD5 at ingest, read-only storage, re-verification before every analysis
-- ✅ Hash-chained audit log of every action, with a built-in verifier
-- ✅ Each tool runs in its own container with no network and sees only its own evidence item
-- ✅ Register files from an import folder (for large images) or upload them
-- 🧪 iPhone backup over USB (libimobiledevice, Linux hosts)
+- SHA-256 and MD5 at ingest, read-only storage, re-verification before every analysis
+- Hash-chained audit log of every action, with a built-in verifier
+- Each tool runs in its own container with no network and sees only its own evidence item
+- Register files from an import folder (for large images) or upload them
+- iPhone backup over USB (libimobiledevice, Linux hosts) *(beta)*
 
 **Analysis**
 | Evidence | Tools |
 |---|---|
-| Android | ✅ ALEAPP · ✅ SQLite deleted-record recovery · ✅ photos and videos (ExifTool) |
-| iPhone | ✅ iLEAPP · ✅ MVT (spyware indicators) · ✅ SQLite recovery · ✅ photos and videos |
-| Disk images (raw, E01) | ✅ The Sleuth Kit, including deleted files and content recovery · 🧪 Plaso |
-| Windows triage (KAPE, Velociraptor) | ✅ RegRipper · ✅ MFTECmd ($MFT, deleted entries) · ✅ Chainsaw · ✅ EVTX · 🧪 Hayabusa |
-| Memory images | ✅ Volatility 3 (Windows, Linux, macOS) |
-| Any file | ✅ YARA with your own rules |
+| Android | ALEAPP · SQLite deleted-record recovery · photos and videos (ExifTool) |
+| iPhone | iLEAPP · MVT (spyware indicators) · SQLite recovery · photos and videos |
+| Disk images (raw, E01) | The Sleuth Kit, including deleted files and content recovery · Plaso *(beta)* |
+| Windows triage (KAPE, Velociraptor) | RegRipper · MFTECmd ($MFT, deleted entries) · Chainsaw · EVTX · Hayabusa *(beta)* |
+| Memory images | Volatility 3 (Windows, Linux, macOS) |
+| Any file | YARA with your own rules |
 
 **Investigation**
-- ✅ One timeline for every source, in UTC; drag across the chart to zoom
-- ✅ Artifact browser with conversation view, photo gallery, offline map and raw data
-- ✅ Recovered deleted data: SQLite free space, freelists and WAL; deleted files (TSK, $MFT)
-- ✅ Read-only SQL on every database found in a phone dump
-- ✅ Search across all cases (Ctrl+K), tags and notes, keyboard shortcuts
-- 🧪 Case assistant (AI): local model by default, shows each step and cites the artifacts it used
+- One timeline for every source, in UTC; drag across the chart to zoom
+- Artifact browser with conversation view, photo gallery, offline map and raw data
+- Recovered deleted data: SQLite free space, freelists and WAL; deleted files (TSK, $MFT)
+- Read-only SQL on every database found in a phone dump
+- Search across all cases (Ctrl+K), tags and notes, keyboard shortcuts
+- Case assistant (AI): local model by default, shows each step and cites the artifacts it used *(beta)*
 
 **Reporting and operations**
-- ✅ PDF and HTML report: evidence hashes, processing, tagged findings, notes, audit log
-- ✅ Case export (.zip) with all artifacts as CSV and JSONL, plus `SHA256SUMS`
-- ✅ One-click backups in Settings; restore from the launcher
-- ✅ Runs on Windows, macOS (Intel and Apple Silicon) and Linux
+- PDF and HTML report: evidence hashes, processing, tagged findings, notes, audit log
+- Case export (.zip) with all artifacts as CSV and JSONL, plus `SHA256SUMS`
+- One-click backups in Settings; restore from the launcher
+- Runs on Windows, macOS (Intel and Apple Silicon) and Linux
 
-**Planned:** user accounts and roles · scaling past 10 million artifacts · people and accounts
+**Planned**: user accounts and roles · scaling past 10 million artifacts · people and accounts
 graph across apps · known-file hash sets (NSRL) · more chat-app parsers · encrypted iPhone
 backups · a one-click installer. See the [roadmap](docs/architecture.md#7-status-and-roadmap).
 
@@ -112,7 +112,7 @@ the results, including anything the AI assistant says. There is no warranty (GPL
 15–16). The wrapped tools keep their own licences, and some, such as MVT's, add conditions of use;
 see [CREDITS.md](CREDITS.md).
 
-## 💛 Support Tracelume
+## Support Tracelume
 Tracelume is free and always will be. Donations fund development time, test phones and disks,
 and keeping parsers current with every new Android and iOS release.
 
@@ -132,7 +132,7 @@ and keeping parsers current with every new Android and iOS release.
 
 <sub>Only send each coin on its own network. Always check addresses against [DONATE.md](DONATE.md) in this repository; maintainers will never DM you an address.</sub>
 
-Not into crypto? ⭐ Star the repo, report bugs, or [contribute](CONTRIBUTING.md). That helps just as much.
+Not into crypto? Star the repo, report bugs, or [contribute](CONTRIBUTING.md). That helps just as much.
 
 ## Credits and licence
 Tracelume stands on the work of many open source authors. See [CREDITS.md](CREDITS.md).

@@ -3,7 +3,7 @@
 <h1 align="center">Support Tracelume</h1>
 
 <p align="center">Tracelume is free and open source (GPL-3.0). Donations pay for development time, test hardware
-(phones, disks), and keeping up with every new Android and iOS release. Thank you! 💛</p>
+(phones, disks), and keeping up with every new Android and iOS release. Thank you.</p>
 
 <p align="center">
 <a href="DONATE.md#bitcoin"><img alt="Donate Bitcoin" src="https://img.shields.io/badge/Donate-Bitcoin-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white"></a>
@@ -49,4 +49,4 @@ Network: Monero. Private by default.
 - The QR codes encode exactly the addresses shown above (`bitcoin:`, `ethereum:`, `monero:` URIs).
 
 ### Other ways to help
-⭐ Star the repository · report bugs · write a plugin · improve the docs · tell other examiners about Tracelume.
+Star the repository · report bugs · write a plugin · improve the docs · tell other examiners about Tracelume.
