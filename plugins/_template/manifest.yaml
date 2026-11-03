@@ -1,0 +1,8 @@
+name: mytool
+image: tracelume/mytool:0.1.0
+build: plugins/mytool/Dockerfile
+tool:
+  name: MyTool
+  version: 1.2.3
+  license: Apache-2.0
+  url: https://example.org/mytool

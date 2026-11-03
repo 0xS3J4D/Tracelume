@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Tracelume launcher: a thin wrapper around docker compose.
+set -euo pipefail
+cd "$(dirname "$0")"
+PORT="${TRACELUME_PORT:-8080}"
+URL="http://127.0.0.1:${PORT}"
+
+need() { command -v "$1" >/dev/null || { echo "Tracelume needs $1. Install Docker Desktop or Docker Engine first." >&2; exit 1; }; }
+need docker
+
+case "${1:-start}" in
+  start)
+    docker compose up -d --build
+    echo "Tracelume is running at ${URL} (local only)."
+    (command -v xdg-open >/dev/null && xdg-open "$URL" >/dev/null 2>&1) || (command -v open >/dev/null && open "$URL") || true ;;
+  stop)   docker compose down ;;
+  status) docker compose ps ;;
+  logs)   docker compose logs -f --tail=100 ;;
+  tools)  docker compose --profile tools build ;;   # build all forensic tool images
+  update) git pull --ff-only && docker compose up -d --build ;;
+  *) echo "usage: ./tracelume [start|stop|status|logs|tools|update]"; exit 2 ;;
+esac
