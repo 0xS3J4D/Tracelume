@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, Response, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlmodel import col, select
@@ -66,6 +66,13 @@ def _case(s: SessionDep, case_id: str) -> Case:
     return c
 
 
+def _open_case(s: SessionDep, case_id: str) -> Case:
+    c = _case(s, case_id)
+    if c.status == "closed":
+        raise HTTPException(409, "case is closed — reopen it to add evidence or run analyses")
+    return c
+
+
 @router.get("/cases/{case_id}")
 def get_case(case_id: str, s: SessionDep) -> dict[str, Any]:
     c = _case(s, case_id)
@@ -103,7 +110,7 @@ def upload_evidence(
     acquired_at: Annotated[datetime | None, Form()] = None,
     notes: Annotated[str | None, Form()] = None,
 ) -> Evidence:
-    _case(s, case_id)
+    _open_case(s, case_id)
     return evidence.ingest_stream(
         s,
         case_id=case_id,
@@ -126,7 +133,7 @@ class ImportIn(BaseModel):
 
 @router.post("/cases/{case_id}/evidence/import", status_code=201)
 def import_evidence(case_id: str, body: ImportIn, s: SessionDep, actor: ActorDep) -> Evidence:
-    _case(s, case_id)
+    _open_case(s, case_id)
     try:
         return evidence.ingest_from_import_dir(
             s,
@@ -172,7 +179,7 @@ class JobIn(BaseModel):
 
 @router.post("/cases/{case_id}/jobs", status_code=201)
 def create_job(case_id: str, body: JobIn, s: SessionDep, actor: ActorDep) -> Job:
-    _case(s, case_id)
+    _open_case(s, case_id)
     ev = s.get(Evidence, body.evidence_id)
     if ev is None or ev.case_id != case_id:
         raise HTTPException(404, "evidence not found in case")
@@ -379,4 +386,57 @@ def job_thumb(job_id: str, name: str) -> FileResponse:
         raise HTTPException(404, "not found")
     return FileResponse(
         path, media_type="image/jpeg", headers={"Cache-Control": "private, max-age=86400"}
+    )
+
+
+class CasePatch(BaseModel):
+    name: str | None = None
+    number: str | None = None
+    description: str | None = None
+    status: str | None = None  # open | closed
+
+
+@router.patch("/cases/{case_id}")
+def update_case(case_id: str, body: CasePatch, s: SessionDep, actor: ActorDep) -> Case:
+    c = _case(s, case_id)
+    patch = body.model_dump(exclude_none=True)
+    if "status" in patch and patch["status"] not in ("open", "closed"):
+        raise HTTPException(422, "status must be open or closed")
+    if "name" in patch and not patch["name"].strip():
+        raise HTTPException(422, "name is required")
+    before = c.model_dump(mode="json")
+    for k, v in patch.items():
+        setattr(c, k, v.strip() if isinstance(v, str) else v)
+    s.add(c)
+    audit.record(
+        s,
+        actor,
+        "case.update",
+        case_id=case_id,
+        object_type="case",
+        object_id=case_id,
+        details={"changes": {k: [before.get(k), v] for k, v in patch.items()}},
+        commit=False,
+    )
+    s.commit()
+    s.refresh(c)
+    return c
+
+
+@router.get("/cases/{case_id}/export.zip")
+def export_case(case_id: str, s: SessionDep, actor: ActorDep) -> Response:
+    from datetime import UTC, datetime
+
+    from tracelume.export import build_bundle
+
+    c = _case(s, case_id)
+    data = build_bundle(s, c, actor)
+    safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in c.name)[:60]
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    return Response(
+        data,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="tracelume-case-{safe}-{stamp}.zip"'
+        },
     )
