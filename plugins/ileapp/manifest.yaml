@@ -1,0 +1,8 @@
+name: ileapp
+image: tracelume/ileapp:0.1.0
+build: plugins/ileapp/Dockerfile
+tool:
+  name: iLEAPP
+  version: v2026.4.6
+  license: MIT
+  url: https://github.com/abrignoni/iLEAPP
