@@ -29,9 +29,28 @@ from tracelume import jobs  # noqa: E402
 FIXTURE = REPO / "plugins/aleapp/tests/fixtures"
 
 
+PURE_PYTHON_TOOLS = {  # these tools are plain Python, so the demo runs them for real
+    "sqlite_recover": REPO / "plugins/sqlite_recover/sqlite_carve.py",
+    "media": REPO / "plugins/media/media_scan.py",
+}
+
+
 def fake(plugin, settings, ev_rel, out_rel, ctx, on_line, *_):  # type: ignore[no-untyped-def]
-    on_line(f"[fake] {' '.join(plugin.build_command(ctx))}")
-    shutil.copytree(FIXTURE, settings.workspace_dir / out_rel, dirs_exist_ok=True)
+    import subprocess
+
+    on_line(f"[demo] {' '.join(plugin.build_command(ctx))}")
+    out = settings.workspace_dir / out_rel
+    script = PURE_PYTHON_TOOLS.get(plugin.meta.name)
+    if script:
+        r = subprocess.run(
+            [sys.executable, str(script), str(settings.evidence_dir / ev_rel), str(out)],
+            capture_output=True,
+            text=True,
+        )
+        for line in (r.stdout + r.stderr).splitlines():
+            on_line(line)
+        return r.returncode
+    shutil.copytree(FIXTURE, out, dirs_exist_ok=True)
     return 0
 
 
