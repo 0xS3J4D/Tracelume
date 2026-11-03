@@ -18,7 +18,11 @@ image, out = sys.argv[1], Path(sys.argv[2])
 out.mkdir(parents=True, exist_ok=True)
 
 if len(sys.argv) > 3 and sys.argv[3] == "extract":
-    offset, inode, name = sys.argv[4], sys.argv[5], Path(sys.argv[6]).name or "recovered.bin"
+    offset, inode, name = (
+        sys.argv[4],
+        sys.argv[5],
+        Path(sys.argv[6]).name or "recovered.bin",
+    )
     dest = out / "recovered"
     dest.mkdir(exist_ok=True)
     target = dest / name

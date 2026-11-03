@@ -32,7 +32,12 @@ class EvtxPlugin(Plugin):
     image: ClassVar[str] = "tracelume/evtx:0.1.0"
 
     def build_command(self, ctx: RunContext) -> list[str]:
-        return ["python", "/opt/run_evtx.py", str(ctx.evidence_path), str(ctx.output_dir)]
+        return [
+            "python",
+            "/opt/run_evtx.py",
+            str(ctx.evidence_path),
+            str(ctx.output_dir),
+        ]
 
     def parse_output(self, ctx: RunContext) -> Iterable[ArtifactIn]:
         for path in sorted((ctx.output_dir / "evtx").glob("*.jsonl")):

@@ -47,7 +47,9 @@ def to_artifact(plugin: str, r: dict[str, Any]) -> ArtifactIn | None:
         )
     if name == "cmdline":
         return ArtifactIn(
-            type="process", title=f"Command line PID {pid} {proc}: {r.get('Args')}", data=data
+            type="process",
+            title=f"Command line PID {pid} {proc}: {r.get('Args')}",
+            data=data,
         )
     if name in ("netscan", "netstat", "sockstat"):
         local = (
@@ -89,7 +91,9 @@ def to_artifact(plugin: str, r: dict[str, Any]) -> ArtifactIn | None:
         )
     if name == "info":
         return ArtifactIn(
-            type="event", title=f"System: {r.get('Variable')} = {r.get('Value')}", data=data
+            type="event",
+            title=f"System: {r.get('Variable')} = {r.get('Value')}",
+            data=data,
         )
     return ArtifactIn(
         type="event", title=f"{plugin}: {json.dumps(r, default=str)[:200]}", data=data
@@ -111,7 +115,12 @@ class Volatility3Plugin(Plugin):
     image: ClassVar[str] = "tracelume/volatility3:0.1.0"
 
     def build_command(self, ctx: RunContext) -> list[str]:
-        return ["python", "/opt/run_vol.py", str(ctx.evidence_path), str(ctx.output_dir)]
+        return [
+            "python",
+            "/opt/run_vol.py",
+            str(ctx.evidence_path),
+            str(ctx.output_dir),
+        ]
 
     def parse_output(self, ctx: RunContext) -> Iterable[ArtifactIn]:
         for path in sorted(ctx.output_dir.glob("*.json")):

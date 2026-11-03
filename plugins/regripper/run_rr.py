@@ -40,5 +40,8 @@ for i, h in enumerate(hives):
         o.write(f"#HIVE {rel}\n")
         o.flush()
         subprocess.run(
-            ["regripper", "-r", str(h), "-a"], stdout=o, stderr=subprocess.STDOUT, check=False
+            ["regripper", "-r", str(h), "-a"],
+            stdout=o,
+            stderr=subprocess.STDOUT,
+            check=False,
         )

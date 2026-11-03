@@ -4,6 +4,7 @@ import {
   api, EVIDENCE_KINDS, fmtBytes, fmtUtc, uploadEvidence, type Evidence, type EvidenceKind, type PluginInfo,
 } from "../../api";
 import RunMenu from "../../components/RunMenu";
+import AcquireIos from "../../components/AcquireIos";
 import { ErrorNote, VerifyBadge } from "../../components/ui";
 
 export default function EvidenceTab({ caseId, onChange }: { caseId: string; onChange: () => void }) {
@@ -92,6 +93,7 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
           </div>
         )}
       </form>
+      <AcquireIos caseId={caseId} />
       <ErrorNote error={error} />
       <ul className="space-y-3">
         {items.map((ev) => {

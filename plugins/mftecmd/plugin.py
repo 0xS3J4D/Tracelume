@@ -42,7 +42,12 @@ class MftecmdPlugin(Plugin):
     image: ClassVar[str] = "tracelume/mftecmd:0.1.0"
 
     def build_command(self, ctx: RunContext) -> list[str]:
-        return ["python3", "/opt/run_mft.py", str(ctx.evidence_path), str(ctx.output_dir)]
+        return [
+            "python3",
+            "/opt/run_mft.py",
+            str(ctx.evidence_path),
+            str(ctx.output_dir),
+        ]
 
     def parse_output(self, ctx: RunContext) -> Iterable[ArtifactIn]:
         for path in sorted((ctx.output_dir / "mft").glob("*.csv")):

@@ -29,7 +29,10 @@ def possible_times(values: list[Any]) -> list[dict[str, Any]]:
             ("unix seconds", lambda x: datetime.fromtimestamp(x, UTC)),
             ("unix milliseconds", lambda x: datetime.fromtimestamp(x / 1000, UTC)),
             ("unix microseconds", lambda x: datetime.fromtimestamp(x / 1_000_000, UTC)),
-            ("Apple absolute seconds", lambda x: datetime.fromtimestamp(x + 978307200, UTC)),
+            (
+                "Apple absolute seconds",
+                lambda x: datetime.fromtimestamp(x + 978307200, UTC),
+            ),
             (
                 "Apple absolute nanoseconds",
                 lambda x: datetime.fromtimestamp(x / 1e9 + 978307200, UTC),
@@ -62,12 +65,23 @@ class SqliteRecoverPlugin(Plugin):
         tool_authors="Tracelume contributors",
     )
     supported_evidence: ClassVar[frozenset[EvidenceKind]] = frozenset(
-        {EvidenceKind.android_fs, EvidenceKind.ios_fs, EvidenceKind.ios_backup, EvidenceKind.other}
+        {
+            EvidenceKind.android_fs,
+            EvidenceKind.ios_fs,
+            EvidenceKind.ios_backup,
+            EvidenceKind.other,
+        }
     )
     image: ClassVar[str] = "tracelume/sqlite-recover:0.1.0"
 
     def build_command(self, ctx: RunContext) -> list[str]:
-        return ["python", "-I", "/opt/sqlite_carve.py", str(ctx.evidence_path), str(ctx.output_dir)]
+        return [
+            "python",
+            "-I",
+            "/opt/sqlite_carve.py",
+            str(ctx.evidence_path),
+            str(ctx.output_dir),
+        ]
 
     def parse_output(self, ctx: RunContext) -> Iterable[ArtifactIn]:
         index_path = ctx.output_dir / "index.json"

@@ -10,7 +10,13 @@ from tracelume.models import EvidenceKind
 from tracelume.parsers.common import iso_utc
 from tracelume.plugins.base import ArtifactIn, Plugin, PluginMeta, RunContext
 
-LEVELS = {"crit": "critical", "high": "high", "med": "medium", "low": "low", "info": "info"}
+LEVELS = {
+    "crit": "critical",
+    "high": "high",
+    "med": "medium",
+    "low": "low",
+    "info": "info",
+}
 
 
 class HayabusaPlugin(Plugin):
@@ -49,5 +55,9 @@ class HayabusaPlugin(Plugin):
                     timestamp=iso_utc(d.get("Timestamp")),
                     timestamp_kind="event logged",
                     source_path=d.get("EvtxFile") or d.get("Channel"),
-                    data={"module": f"Hayabusa: {d.get('Channel', '')}", "severity": level, **d},
+                    data={
+                        "module": f"Hayabusa: {d.get('Channel', '')}",
+                        "severity": level,
+                        **d,
+                    },
                 )

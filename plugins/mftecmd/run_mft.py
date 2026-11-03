@@ -26,6 +26,15 @@ dll = next(Path("/opt/mftecmd").rglob("MFTECmd.dll"))
 for i, m in enumerate(mfts):
     print(f"$MFT: {m}", flush=True)
     subprocess.run(
-        ["dotnet", str(dll), "-f", str(m), "--csv", str(out), "--csvf", f"{i:03d}_mft.csv"],
+        [
+            "dotnet",
+            str(dll),
+            "-f",
+            str(m),
+            "--csv",
+            str(out),
+            "--csvf",
+            f"{i:03d}_mft.csv",
+        ],
         check=True,
     )

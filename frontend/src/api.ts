@@ -26,7 +26,7 @@ export interface Evidence {
 }
 export type JobStatus = "queued" | "running" | "succeeded" | "failed" | "cancelled";
 export interface Job {
-  id: string; case_id: string; evidence_id: string; plugin: string; plugin_version: string;
+  id: string; case_id: string; evidence_id: string | null; plugin: string; plugin_version: string;
   status: JobStatus; created_at: string; started_at: string | null; finished_at: string | null;
   exit_code: number | null; artifact_count: number; error: string | null;
   params: Record<string, unknown>;
@@ -156,6 +156,11 @@ export const api = {
   cancelJob: (jobId: string) => req<Job>(`/jobs/${jobId}/cancel`, { method: "POST" }),
   backups: () => req<BackupState>("/backups"),
   createBackup: () => req<{ started: boolean }>("/backups", { method: "POST" }),
+  acquireStatus: () => req<{ usb_available: boolean }>("/acquire/status"),
+  acquireIos: (caseId: string, mode: "list" | "backup", udid?: string) =>
+    req<Job>(`/cases/${caseId}/acquire/ios`, json("POST", { mode, udid })),
+  acquireDevices: (jobId: string) =>
+    req<{ udid: string; DeviceName?: string; ProductType?: string; ProductVersion?: string; paired?: boolean }[]>(`/jobs/${jobId}/devices`),
   notes: (caseId: string, artifactId?: string) =>
     req<Note[]>(`/cases/${caseId}/notes?${qs({ artifact_id: artifactId })}`),
   createNote: (caseId: string, body: string, artifactId?: string) =>
