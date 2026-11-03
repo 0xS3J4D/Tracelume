@@ -1,0 +1,49 @@
+name: CI
+on: [push, pull_request]
+permissions: { contents: read }
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env: { POSTGRES_USER: t, POSTGRES_PASSWORD: t, POSTGRES_DB: t }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U t" --health-interval 3s --health-retries 20
+    strategy:
+      matrix:
+        db: [sqlite, postgres]
+    defaults: { run: { working-directory: backend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv venv -p 3.12 && uv pip install -e '.[dev]'
+      - run: .venv/bin/ruff check . ../plugins && .venv/bin/ruff format --check . ../plugins
+      - run: .venv/bin/mypy tracelume
+      - name: pytest
+        run: |
+          if [ "${{ matrix.db }}" = postgres ]; then
+            export TRACELUME_TEST_DATABASE_URL=postgresql+psycopg://t:t@localhost:5432/t
+          fi
+          .venv/bin/pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: frontend } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: frontend/package-lock.json }
+      - uses: astral-sh/setup-uv@v5
+      - run: cd ../backend && uv venv -p 3.12 && uv pip install -e .
+      - run: npm ci
+      - run: npm run lint && npm run typecheck && npx vite build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t tracelume/app:ci .
