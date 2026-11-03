@@ -22,7 +22,7 @@ export default function RunMenu({ ev, plugins, onRun, onRunAll }: {
         <button className="btn-ghost" aria-expanded={open} onClick={() => setOpen((o) => !o)}>Choose… ▾</button>
       </div>
       {open && (
-        <ul role="menu" className="absolute right-0 z-20 mt-1 w-96 overflow-hidden rounded-lg border border-ink-700 bg-ink-900 shadow-xl">
+        <ul role="menu" className="absolute right-0 z-20 mt-1 max-h-80 w-96 overflow-auto rounded-lg border border-ink-700 bg-ink-900 shadow-xl">
           {usable.map((p) => (
             <li key={p.name}>
               <button role="menuitem" className="block w-full px-3 py-2 text-left hover:bg-ink-800"
