@@ -1,0 +1,5 @@
+{"__container_type__": "event", "__type__": "AttributeContainer", "data_type": "fs:stat", "datetime": "2024-05-01T09:15:02.000000+00:00", "display_name": "OS:/Users/demo/report.docx", "filename": "/Users/demo/report.docx", "inode": "1234", "message": "/Users/demo/report.docx Type: file", "parser": "filestat", "timestamp": 1714554902000000, "timestamp_desc": "Content Modification Time"}
+{"__container_type__": "event", "data_type": "windows:evtx:record", "datetime": "2024-05-01T10:00:00.123456+00:00", "event_identifier": 4624, "message": "[4624 / 0x1210] Source Name: Microsoft-Windows-Security-Auditing", "parser": "winevtx", "timestamp_desc": "Content Modification Time", "filename": "C:/Windows/System32/winevt/Logs/Security.evtx"}
+{"data_type": "chrome:history:page_visited", "datetime": "2024-05-02T08:00:00+00:00", "url": "https://example.org/", "message": "https://example.org/ (Example)", "parser": "sqlite/chrome_27_history", "timestamp_desc": "Last Visited Time"}
+{"data_type": "fs:stat", "datetime": "Not set", "message": "no time", "parser": "filestat"}
+not json
