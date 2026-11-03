@@ -12,7 +12,7 @@ may be crafted to attack parsers.
 - **Parsers run in throwaway containers** with `--network none`, all capabilities dropped,
   `no-new-privileges`, and a non-root user. Evidence is mounted read-only.
 - **Docker API access** goes through `docker-socket-proxy`, which allows only container and
-  image endpoints. This is still powerful: anyone who controls the worker can start
+  image endpoints. That access still matters: anyone who controls the worker can start
   containers. Do not expose the worker or the proxy.
 - **Network:** the UI/API port is bound to `127.0.0.1`. Backend services sit on an internal
   Docker network with no internet route. Tracelume makes no outbound calls during analysis.
