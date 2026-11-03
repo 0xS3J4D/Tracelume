@@ -19,12 +19,15 @@ cd ../frontend && npm ci && npm run dev               # UI on :5173
 
 ## Before every commit
 ```bash
-cd backend && .venv/bin/ruff check . ../plugins && .venv/bin/ruff format --check . ../plugins \
-  && .venv/bin/mypy tracelume && .venv/bin/pytest
-cd frontend && npm run lint && npm run typecheck && npm run e2e
+./scripts/check.sh          # everything CI runs (SKIP_E2E=1 to skip the browser test)
 ```
 
 Keep commits small and well described. One logical change per PR.
+
+## Changing the database schema
+Edit `backend/tracelume/models.py`, then run `./scripts/new_migration.sh "describe the change"`
+and review the generated file in `backend/tracelume/migrations/versions/`. A test fails
+if the models and the migrations drift apart. Migrations run automatically at startup.
 
 ## Writing a plugin
 See [docs/writing-a-plugin.md](docs/writing-a-plugin.md) and copy `plugins/_template/`.
