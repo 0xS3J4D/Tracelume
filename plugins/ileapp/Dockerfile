@@ -12,7 +12,9 @@ with tarfile.open(fileobj=io.BytesIO(data)) as t:
     t.extractall("/opt", filter="data")
 os.rename(f"/opt/{root}", "/opt/ileapp")
 PY
-RUN pip install --no-cache-dir -r /opt/ileapp/requirements.txt
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential \
+ && pip install --no-cache-dir -r /opt/ileapp/requirements.txt \
+ && apt-get purge -y build-essential && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
 RUN useradd -r -u 10001 tool
 USER tool
 WORKDIR /opt/ileapp
