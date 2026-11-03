@@ -1,5 +1,6 @@
 name: Tool images
-# Builds every forensic tool image and runs it on synthetic / public sample evidence.
+# Builds each forensic tool image and, where a test exists, runs it on synthetic or public
+# sample evidence exactly as the worker does (no network, read-only evidence).
 on:
   push:
     branches: [main]
@@ -11,13 +12,42 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  tools:
-    # Builds every forensic tool image and runs it on synthetic evidence.
+  tool:
+    name: ${{ matrix.service }}
     runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { service: aleapp,         test: "aleapp and integration" }
+          - { service: ileapp,         test: "" }
+          - { service: sleuthkit,      test: "sleuthkit and integration" }
+          - { service: sqlite-recover, test: "" }
+          - { service: media,          test: "media and integration" }
+          - { service: plaso,          test: "plaso and integration" }
+          - { service: volatility3,    test: "" }
+          - { service: hayabusa,       test: "windows_log_tools and hayabusa" }
+          - { service: chainsaw,       test: "windows_log_tools and chainsaw" }
+          - { service: evtx,           test: "windows_log_tools and evtx" }
+          - { service: regripper,      test: "" }
+          - { service: mftecmd,        test: "" }
+          - { service: yara,           test: "yara_matches" }
+          - { service: mvt,            test: "" }
+          - { service: acquire-ios,    test: "" }
+    env:
+      TRACELUME_REGISTRY: ghcr.io/0xs3j4d
     steps:
       - uses: actions/checkout@v5
+      - name: Build ${{ matrix.service }}
+        run: docker compose --profile tools build ${{ matrix.service }}
+      - name: Test fixtures
+        if: matrix.test != ''
+        run: sudo apt-get update -q && sudo apt-get install -y -q dosfstools mtools
       - uses: astral-sh/setup-uv@v6
-      - run: sudo apt-get update && sudo apt-get install -y dosfstools mtools
-      - run: docker compose --profile tools build
-      - run: cd backend && uv venv -p 3.12 && uv pip install -e '.[dev]' pillow
-      - run: cd backend && TRACELUME_INTEGRATION=1 .venv/bin/pytest -q ../plugins tests -k integration -rs
+        if: matrix.test != ''
+      - name: Run ${{ matrix.service }} on sample evidence
+        if: matrix.test != ''
+        run: |
+          cd backend && uv venv -p 3.12 && uv pip install -e '.[dev]' pillow
+          TRACELUME_INTEGRATION=1 .venv/bin/pytest -q ../plugins tests -k "${{ matrix.test }}" -rs
