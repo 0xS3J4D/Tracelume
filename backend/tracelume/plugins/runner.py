@@ -21,22 +21,28 @@ def run_in_docker(
     import docker
     from docker.types import Mount
 
-    client = docker.from_env()
+    client = docker.from_env(version="auto")
+    ev_name = Path(evidence_rel).name
+    tool_ctx = RunContext(
+        evidence_path=EVIDENCE_MOUNT / ev_name,
+        output_dir=OUTPUT_MOUNT,
+        evidence_kind=ctx.evidence_kind,
+        params=ctx.params,
+    )
     if settings.evidence_volume and settings.workspace_volume:
-        # Worker runs inside compose: mount named volumes (sub-paths resolved by the tool).
-        mounts = [
-            Mount("/evidence_root", settings.evidence_volume, type="volume", read_only=True),
-            Mount("/output_root", settings.workspace_volume, type="volume", read_only=False),
-        ]
-        tool_ctx = RunContext(
-            evidence_path=Path("/evidence_root") / evidence_rel,
-            output_dir=Path("/output_root") / output_rel,
-            evidence_kind=ctx.evidence_kind,
-            params=ctx.params,
+        # Worker runs inside compose: mount ONLY this evidence item's directory and this job's
+        # output directory, using volume sub-paths (Docker Engine >= 26).
+        ev_mount = Mount(
+            str(EVIDENCE_MOUNT), settings.evidence_volume, type="volume", read_only=True
         )
+        ev_mount["VolumeOptions"] = {"Subpath": str(Path(evidence_rel).parent)}
+        out_mount = Mount(str(OUTPUT_MOUNT), settings.workspace_volume, type="volume")
+        out_mount["VolumeOptions"] = {"Subpath": output_rel}
+        mounts = [ev_mount, out_mount]
+        on_line("[tracelume] tool sees only this evidence item (read-only) and its own output")
     else:
+        # Mount the evidence's own directory so the tool sees the original file name.
         mounts = [
-            # Mount the evidence's own directory so the tool sees the original file name.
             Mount(
                 str(EVIDENCE_MOUNT),
                 str((settings.evidence_dir / evidence_rel).parent.resolve()),
@@ -50,12 +56,6 @@ def run_in_docker(
                 read_only=False,
             ),
         ]
-        tool_ctx = RunContext(
-            evidence_path=EVIDENCE_MOUNT / Path(evidence_rel).name,
-            output_dir=OUTPUT_MOUNT,
-            evidence_kind=ctx.evidence_kind,
-            params=ctx.params,
-        )
     container = client.containers.run(
         plugin.image,
         plugin.build_command(tool_ctx),
@@ -63,6 +63,8 @@ def run_in_docker(
         network_mode="none",
         cap_drop=["ALL"],
         security_opt=["no-new-privileges"],
+        pids_limit=4096,
+        labels={"tracelume.job": output_rel},
         detach=True,
     )
     try:

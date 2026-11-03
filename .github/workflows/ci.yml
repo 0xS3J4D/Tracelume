@@ -55,6 +55,7 @@ jobs:
           docker run -d --name app -p 8000:8000 tracelume/app:ci
           for i in $(seq 30); do curl -sf localhost:8000/api/health && break; sleep 1; done
           curl -sf localhost:8000/ | grep -q '<div id="root">'
+          docker exec app python -c "import weasyprint; assert weasyprint.HTML(string='<p>x</p>').write_pdf()[:4] == b'%PDF'"
 
   tools:
     # Builds every forensic tool image and runs it on synthetic evidence.
