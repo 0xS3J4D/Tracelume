@@ -28,6 +28,7 @@ export interface Job {
   id: string; case_id: string; evidence_id: string; plugin: string; plugin_version: string;
   status: JobStatus; created_at: string; started_at: string | null; finished_at: string | null;
   exit_code: number | null; artifact_count: number; error: string | null;
+  params: Record<string, unknown>;
 }
 export interface Artifact {
   id: string; case_id: string; evidence_id: string; job_id: string; type: string;
@@ -141,6 +142,8 @@ export const api = {
   assistantMessages: (caseId: string) => req<AssistantMessage[]>(`/cases/${caseId}/assistant/messages`),
   ask: (caseId: string, question: string) =>
     req<AssistantMessage>(`/cases/${caseId}/assistant`, json("POST", { question })),
+  recover: (artifactId: string) => req<Job>(`/artifacts/${artifactId}/recover`, { method: "POST" }),
+  cancelJob: (jobId: string) => req<Job>(`/jobs/${jobId}/cancel`, { method: "POST" }),
   notes: (caseId: string, artifactId?: string) =>
     req<Note[]>(`/cases/${caseId}/notes?${qs({ artifact_id: artifactId })}`),
   createNote: (caseId: string, body: string, artifactId?: string) =>

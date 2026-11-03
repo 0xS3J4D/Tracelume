@@ -8,17 +8,22 @@ from pathlib import Path
 from sqlmodel import Session, select
 
 from tracelume import audit
-from tracelume.config import Settings, get_settings
+from tracelume.config import get_settings
 from tracelume.db import get_engine
 from tracelume.evidence import verify
 from tracelume.models import Artifact, Evidence, Job, JobStatus, utcnow
-from tracelume.plugins.base import Plugin, RunContext
+from tracelume.plugins.base import RunContext
 from tracelume.plugins.registry import get_plugin
 from tracelume.plugins.runner import run_in_docker
 
-Runner = Callable[[Plugin, Settings, str, str, RunContext, Callable[[str], None]], int]
+Runner = Callable[..., int]
 RUNNERS: dict[str, Runner] = {"docker": run_in_docker}
 BATCH = 1000
+CANCEL_MARK = "__cancel_requested__"
+
+
+class CancelledError(Exception):
+    pass
 
 
 def job_dir(job_id: str) -> Path:
@@ -60,6 +65,10 @@ def execute_job(job_id: str) -> None:
         ev = s.get(Evidence, job.evidence_id)
         assert ev is not None
         actor = settings.examiner
+        if job.status == JobStatus.cancelled:
+            log("[tracelume] job was cancelled before it started")
+            logf.close()
+            return
         job.status, job.started_at = JobStatus.running, utcnow()
         s.add(job)
         audit.record(
@@ -85,8 +94,19 @@ def execute_job(job_id: str) -> None:
                 log=logging.getLogger(f"tracelume.job.{job.id}"),
             )
             log(f"[tracelume] running {plugin.meta.tool_name} via image {plugin.image}")
-            code = RUNNERS[settings.runner](plugin, settings, ev.stored_path, out_rel, ctx, log)
+
+            def is_cancelled() -> bool:
+                with Session(get_engine()) as s2:
+                    j = s2.get(Job, job_id)
+                    return j is not None and j.error == CANCEL_MARK
+
+            code = RUNNERS[settings.runner](
+                plugin, settings, ev.stored_path, out_rel, ctx, log, is_cancelled
+            )
             job.exit_code = code
+            s.refresh(job)
+            if job.error == CANCEL_MARK:
+                raise CancelledError
             if code != 0:
                 raise RuntimeError(f"tool exited with code {code}")
             log("[tracelume] parsing tool output")
@@ -118,6 +138,13 @@ def execute_job(job_id: str) -> None:
             job.artifact_count = count
             job.status = JobStatus.succeeded
             log(f"[tracelume] done: {count} artifacts")
+        except CancelledError:
+            s.rollback()
+            fresh = s.get(Job, job_id)
+            assert fresh is not None
+            job = fresh
+            job.status, job.error = JobStatus.cancelled, "cancelled by examiner"
+            log("[tracelume] cancelled")
         except Exception as exc:  # noqa: BLE001 — any failure marks the job failed
             s.rollback()
             fresh = s.get(Job, job_id)
