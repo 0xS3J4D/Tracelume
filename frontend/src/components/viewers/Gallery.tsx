@@ -16,11 +16,11 @@ export default function Gallery({ items, selectedId, onSelect }: {
               <div className="flex aspect-square items-center justify-center bg-ink-950">
                 {thumb
                   ? <img src={`/api/jobs/${a.job_id}/thumbs/${thumb}`} alt={a.title} loading="lazy" className="h-full w-full object-cover" />
-                  : <span className="text-xs uppercase tracking-wide text-slate-500">{String(a.data.kind ?? "file")}</span>}
+                  : <span className="text-xs uppercase tracking-wide text-slate-400">{String(a.data.kind ?? "file")}</span>}
               </div>
               <div className="p-2">
                 <p className="truncate text-xs text-slate-200">{a.title}</p>
-                <p className="truncate text-[10px] text-slate-500">
+                <p className="truncate text-xs text-slate-400">
                   {a.timestamp ? fmtUtc(a.timestamp) : a.data.exif_local_time ? `${a.data.exif_local_time} (local, zone unknown)` : "no time"}
                   {a.data.Latitude !== undefined && " · GPS"}
                 </p>

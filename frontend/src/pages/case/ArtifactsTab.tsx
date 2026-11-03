@@ -109,7 +109,7 @@ export default function ArtifactsTab({ caseId, types }: { caseId: string; types:
               {!data.items.length && <p className="p-6 text-sm text-slate-400">No artifacts match these filters.</p>}
             </div>
             <footer className="flex items-center justify-end gap-2 border-t border-ink-700 p-2 text-xs">
-              <span className="mr-auto pl-2 text-slate-500"><kbd>j</kbd>/<kbd>k</kbd> move · <kbd>t</kbd> tag · <kbd>n</kbd> note</span>
+              <span className="mr-auto pl-2 text-slate-400"><kbd>j</kbd>/<kbd>k</kbd> move · <kbd>t</kbd> tag · <kbd>n</kbd> note</span>
               <button className="btn-ghost" disabled={offset === 0} onClick={() => setOffset(Math.max(0, offset - PAGE))}>Previous</button>
               <span>{data.total ? `${offset + 1}–${Math.min(offset + PAGE, data.total)} of ${data.total}` : "0"}</span>
               <button className="btn-ghost" disabled={offset + PAGE >= data.total} onClick={() => setOffset(offset + PAGE)}>Next</button>

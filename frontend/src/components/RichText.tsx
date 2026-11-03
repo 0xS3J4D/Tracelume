@@ -12,7 +12,7 @@ export default function RichText({ text, onCite }: { text: string; onCite: (id: 
         if (!order.includes(cite[1])) order.push(cite[1]);
         const n = order.indexOf(cite[1]) + 1;
         return <button key={k} onClick={() => onCite(cite[1], n)} title="Open cited artifact"
-          className="mx-0.5 rounded bg-accent/15 px-1 align-super text-[10px] font-semibold text-accent hover:bg-accent/30">{n}</button>;
+          className="mx-0.5 rounded bg-accent/15 px-1 align-super text-xs font-semibold text-accent hover:bg-accent/30">{n}</button>;
       }
       if (part.startsWith("**") && part.endsWith("**")) return <strong key={k}>{part.slice(2, -2)}</strong>;
       if (part.startsWith("`") && part.endsWith("`")) return <code key={k} className="rounded bg-ink-950 px-1 font-mono text-xs">{part.slice(1, -1)}</code>;

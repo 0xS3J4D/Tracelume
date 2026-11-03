@@ -70,7 +70,7 @@ export default function ArtifactDetail({
         <dt className="text-slate-400">Time field</dt><dd>{artifact.timestamp_kind ?? "—"}</dd>
         <dt className="text-slate-400">Plugin</dt><dd>{artifact.source_plugin}</dd>
         <dt className="text-slate-400">Source path</dt><dd className="break-all font-mono">{artifact.source_path ?? "—"}</dd>
-        <dt className="text-slate-400">Artifact ID</dt><dd className="break-all font-mono text-slate-500">{artifact.id}</dd>
+        <dt className="text-slate-400">Artifact ID</dt><dd className="break-all font-mono text-slate-400">{artifact.id}</dd>
       </dl>
 
       {Array.isArray(artifact.data.possible_times_utc) && artifact.data.possible_times_utc.length > 0 && (
@@ -78,7 +78,7 @@ export default function ArtifactDetail({
           <p className="mb-1 text-slate-400">Values that decode as plausible timestamps (verify the unit in the app's schema):</p>
           <ul className="space-y-0.5 font-mono">
             {(artifact.data.possible_times_utc as { column: number; unit: string; utc: string }[]).map((t, i) => (
-              <li key={i}>col {t.column}: {fmtUtc(t.utc)} <span className="text-slate-500">({t.unit})</span></li>
+              <li key={i}>col {t.column}: {fmtUtc(t.utc)} <span className="text-slate-400">({t.unit})</span></li>
             ))}
           </ul>
         </div>
@@ -101,12 +101,12 @@ export default function ArtifactDetail({
         <div className="rounded-md border border-ink-700 p-3 text-xs">
           <p className="mb-2 text-slate-300">{fmtBytes(Number(artifact.data.size ?? 0))} · SHA-256 <span className="font-mono">{String(artifact.data.sha256 ?? "")}</span></p>
           <a className="btn-primary" href={`/api/jobs/${artifact.job_id}/files/${artifact.data.recovered_file}`} download>Download recovered file</a>
-          <p className="mt-2 text-slate-500">Downloads are hashed and recorded in the audit log.</p>
+          <p className="mt-2 text-slate-400">Downloads are hashed and recorded in the audit log.</p>
         </div>
       )}
 
       <section aria-labelledby="tags-h">
-        <h3 id="tags-h" className="label">Tags <kbd className="ml-1 text-slate-500">t</kbd></h3>
+        <h3 id="tags-h" className="label">Tags <kbd className="ml-1 text-slate-400">t</kbd></h3>
         <div className="mb-2 flex flex-wrap gap-1.5">
           {caseTags.map((t) => {
             const on = tags.some((x) => x.id === t.id);
@@ -128,12 +128,12 @@ export default function ArtifactDetail({
       </section>
 
       <section aria-labelledby="notes-h">
-        <h3 id="notes-h" className="label">Notes <kbd className="ml-1 text-slate-500">n</kbd></h3>
+        <h3 id="notes-h" className="label">Notes <kbd className="ml-1 text-slate-400">n</kbd></h3>
         <ul className="mb-2 space-y-2">
           {notes.map((n) => (
             <li key={n.id} className="rounded border-l-2 border-mark bg-ink-950 px-3 py-2 text-sm">
               <p className="whitespace-pre-wrap">{n.body}</p>
-              <p className="mt-1 text-[11px] text-slate-500">{n.author} · {fmtUtc(n.created_at)}</p>
+              <p className="mt-1 text-xs text-slate-400">{n.author} · {fmtUtc(n.created_at)}</p>
             </li>
           ))}
         </ul>
@@ -142,7 +142,7 @@ export default function ArtifactDetail({
           <textarea id="new-note" ref={noteRef} className="input" rows={2} placeholder="Add an examiner note…"
             value={note} onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addNote(e); }} />
-          <button className="btn-ghost" disabled={!note.trim()}>Save note <span className="text-slate-500">Ctrl+Enter</span></button>
+          <button className="btn-ghost" disabled={!note.trim()}>Save note <span className="text-slate-400">Ctrl+Enter</span></button>
         </form>
       </section>
 

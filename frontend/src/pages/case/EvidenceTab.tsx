@@ -53,7 +53,7 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
         <div className="md:col-span-2">
           <label className="label" htmlFor="ev-file">Evidence file</label>
           <input id="ev-file" type="file" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-400">
             The original is hashed (SHA-256 + MD5) while it is written, then stored read-only.
             For very large images, drop them in the import folder instead.
           </p>

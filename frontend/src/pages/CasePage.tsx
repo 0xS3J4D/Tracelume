@@ -33,7 +33,11 @@ export default function CasePage() {
         actions={
           <div className="flex items-center gap-2">
             {c.status === "closed" && <span className="rounded bg-slate-700 px-2 py-0.5 text-xs text-slate-200">Closed</span>}
-            <button className="btn-ghost" onClick={async () => { await api.updateCase(caseId, { status: c.status === "closed" ? "open" : "closed" }); refresh(); }}>
+            <button className="btn-ghost" onClick={async () => {
+              const closing = c.status !== "closed";
+              if (closing && !window.confirm("Close this case? New evidence and analyses will be blocked until it is reopened. This is recorded in the audit log.")) return;
+              await api.updateCase(caseId, { status: closing ? "closed" : "open" }); refresh();
+            }}>
               {c.status === "closed" ? "Reopen case" : "Close case"}
             </button>
             <a className="btn-ghost" href={`/api/cases/${caseId}/export.zip`} download title="Report, audit log, hashes, all artifacts (CSV/JSONL), notes and tags">Export case (.zip)</a>

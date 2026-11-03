@@ -41,7 +41,7 @@ export default function OverviewTab({ caseId, summary }: { caseId: string; summa
           {jobs.slice(0, 6).map((j) => (
             <li key={j.id} className="flex items-center justify-between gap-2">
               <Link to={`/jobs/${j.id}`} className="hover:text-accent">{j.plugin}</Link>
-              <span className="text-xs text-slate-500">{fmtUtc(j.created_at)}</span>
+              <span className="text-xs text-slate-400">{fmtUtc(j.created_at)}</span>
               <StatusBadge status={j.status} />
             </li>
           ))}
