@@ -7,6 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from tracelume import __version__
+from tracelume.api import workspace
 from tracelume.api.routes import router
 from tracelume.config import get_settings
 from tracelume.db import init_db
@@ -24,6 +25,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     app = FastAPI(title="Tracelume", version=__version__, lifespan=lifespan)
     app.include_router(router)
+    app.include_router(workspace.router)
 
     @app.get("/api/health")
     def health() -> dict[str, str]:
