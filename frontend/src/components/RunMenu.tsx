@@ -12,7 +12,7 @@ export default function RunMenu({ ev, plugins, onRun, onRunAll }: {
   const [values, setValues] = useState<Record<string, string>>({});
   const usable = plugins.filter((p) => p.supported_evidence.includes(ev.kind));
   const auto = usable.filter((p) => !Object.values(p.params_schema ?? {}).some((x) => x.required));
-  if (!usable.length) return <span className="text-xs text-slate-500">No analyses for this type</span>;
+  if (!usable.length) return <span className="text-xs text-slate-400">No analyses for this type</span>;
 
   return (
     <div className="relative">

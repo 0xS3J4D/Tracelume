@@ -6,7 +6,7 @@ import { ErrorNote } from "../../components/ui";
 const quote = (n: string) => `"${n.replace(/"/g, '""')}"`;
 
 function Cell({ v }: { v: unknown }) {
-  if (v === null || v === undefined) return <span className="text-slate-600">NULL</span>;
+  if (v === null || v === undefined) return <span className="text-slate-400">NULL</span>;
   if (typeof v === "object") {
     const b = v as { blob_hex?: string; blob_len?: number };
     return <span className="text-slate-400" title={b.blob_hex}>BLOB {fmtBytes(b.blob_len ?? 0)}</span>;
@@ -65,8 +65,8 @@ export default function DatabasesTab({ caseId }: { caseId: string }) {
               <li key={d.id}>
                 <button onClick={() => setDb(d)} className={`block w-full px-3 py-2 text-left ${db?.id === d.id ? "bg-ink-800" : "hover:bg-ink-850"}`}>
                   <span className="block truncate text-sm text-slate-100" title={d.path}>{d.path.split("/").pop()}</span>
-                  <span className="block truncate text-[11px] text-slate-500" title={d.path}>{d.path}</span>
-                  <span className="text-[11px] text-slate-400">{Object.keys(d.tables).length} tables · {fmtBytes(d.size)}
+                  <span className="block truncate text-xs text-slate-400" title={d.path}>{d.path}</span>
+                  <span className="text-xs text-slate-400">{Object.keys(d.tables).length} tables · {fmtBytes(d.size)}
                     {rec > 0 && <span className="ml-1 text-mark">· {rec} recovered</span>}</span>
                 </button>
               </li>
@@ -84,7 +84,7 @@ export default function DatabasesTab({ caseId }: { caseId: string }) {
                   <li key={t.name}>
                     <button className="w-full truncate rounded px-1.5 py-0.5 text-left hover:bg-ink-800" title={t.columns.map((c) => `${c.name} ${c.type}`).join("\n")}
                       onClick={() => { const q = `SELECT * FROM ${quote(t.name)} LIMIT 100`; setSql(q); run(q); }}>
-                      {t.name} <span className="text-slate-500">{t.rows ?? ""}</span>
+                      {t.name} <span className="text-slate-400">{t.rows ?? ""}</span>
                     </button>
                   </li>
                 ))}
@@ -118,7 +118,7 @@ export default function DatabasesTab({ caseId }: { caseId: string }) {
                 </tbody>
               </table>
             )}
-            {result?.truncated && <p className="p-2 text-xs text-slate-500">Showing the first 2,000 rows. Add a WHERE or LIMIT clause to narrow the result.</p>}
+            {result?.truncated && <p className="p-2 text-xs text-slate-400">Showing the first 2,000 rows. Add a WHERE or LIMIT clause to narrow the result.</p>}
           </div>
         </section>
       ) : (

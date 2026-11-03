@@ -32,7 +32,7 @@ export default function JobPage() {
         actions={
           <div className="flex gap-2">
             {(job.status === "queued" || job.status === "running") && (
-              <button className="btn-ghost text-red-300" onClick={async () => setJob(await api.cancelJob(job.id))}>Cancel job</button>
+              <button className="btn-ghost text-red-300" onClick={async () => { if (window.confirm("Cancel this job? Partial results are discarded.")) setJob(await api.cancelJob(job.id)); }}>Cancel job</button>
             )}
             <Link className="btn-ghost" to={`/cases/${job.case_id}/artifacts`}>View artifacts →</Link>
           </div>
