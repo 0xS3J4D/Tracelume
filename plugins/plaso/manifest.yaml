@@ -1,0 +1,8 @@
+name: plaso
+image: tracelume/plaso:0.1.0
+build: plugins/plaso/Dockerfile
+tool:
+  name: Plaso (log2timeline)
+  version: "20261027"
+  license: Apache-2.0
+  url: https://github.com/log2timeline/plaso

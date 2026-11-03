@@ -1,0 +1,8 @@
+name: volatility3
+image: tracelume/volatility3:0.1.0
+build: plugins/volatility3/Dockerfile
+tool:
+  name: Volatility 3
+  version: 2.28.2
+  license: Volatility Software License
+  url: https://github.com/volatilityfoundation/volatility3
