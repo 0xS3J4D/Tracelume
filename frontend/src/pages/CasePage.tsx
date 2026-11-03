@@ -31,7 +31,12 @@ export default function CasePage() {
     <>
       <PageHeader title={c.name} sub={[c.number, `Examiner: ${c.examiner}`].filter(Boolean).join(" · ")}
         actions={
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {c.status === "closed" && <span className="rounded bg-slate-700 px-2 py-0.5 text-xs text-slate-200">Closed</span>}
+            <button className="btn-ghost" onClick={async () => { await api.updateCase(caseId, { status: c.status === "closed" ? "open" : "closed" }); refresh(); }}>
+              {c.status === "closed" ? "Reopen case" : "Close case"}
+            </button>
+            <a className="btn-ghost" href={`/api/cases/${caseId}/export.zip`} download title="Report, audit log, hashes, all artifacts (CSV/JSONL), notes and tags">Export case (.zip)</a>
             <a className="btn-ghost" href={`/api/cases/${caseId}/report.html`} download>Report (HTML)</a>
             <a className="btn-primary" href={`/api/cases/${caseId}/report.pdf`} download>Export PDF report</a>
           </div>

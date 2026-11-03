@@ -108,6 +108,8 @@ export const api = {
   createCase: (b: { name: string; number?: string; description?: string }) =>
     req<Case>("/cases", json("POST", b)),
   caseSummary: (id: string) => req<CaseSummary>(`/cases/${id}`),
+  updateCase: (id: string, b: Partial<Pick<Case, "name" | "number" | "description" | "status">>) =>
+    req<Case>(`/cases/${id}`, json("PATCH", b)),
   evidence: (caseId: string) => req<Evidence[]>(`/cases/${caseId}/evidence`),
   verify: (id: string) => req<Evidence>(`/evidence/${id}/verify`, { method: "POST" }),
   plugins: () => req<PluginInfo[]>("/plugins"),
