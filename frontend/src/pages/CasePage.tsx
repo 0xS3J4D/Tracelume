@@ -8,10 +8,11 @@ import JobsTab from "./case/JobsTab";
 import ArtifactsTab from "./case/ArtifactsTab";
 import AuditTab from "./case/AuditTab";
 import TimelineTab from "./case/TimelineTab";
+import DatabasesTab from "./case/DatabasesTab";
 
 const TABS = [
   ["", "Overview"], ["evidence", "Evidence"], ["jobs", "Jobs"],
-  ["timeline", "Timeline"], ["artifacts", "Artifacts"], ["audit", "Audit log"],
+  ["timeline", "Timeline"], ["artifacts", "Artifacts"], ["databases", "SQL"], ["audit", "Audit log"],
 ] as const;
 
 export default function CasePage() {
@@ -49,6 +50,7 @@ export default function CasePage() {
         {tab === "jobs" && <JobsTab caseId={caseId} />}
         {tab === "artifacts" && <ArtifactsTab caseId={caseId} types={Object.keys(summary.artifact_counts)} />}
         {tab === "timeline" && <TimelineTab caseId={caseId} types={Object.keys(summary.artifact_counts)} />}
+        {tab === "databases" && <DatabasesTab caseId={caseId} />}
         {tab === "audit" && <AuditTab caseId={caseId} />}
       </div>
     </>

@@ -29,6 +29,8 @@ ARTIFACT_TYPES = frozenset(
         "network_connection",
         "registry",
         "log_event",
+        "database",
+        "recovered_record",
         "event",
     }
 )

@@ -322,3 +322,76 @@ def export_report(case_id: str, fmt: str, s: SessionDep, actor: ActorDep) -> Res
             "X-Report-SHA256": digest,
         },
     )
+
+
+# ---------- SQL workbench ----------
+def _sqlite_jobs(s: SessionDep, case_id: str) -> list[str]:
+    from tracelume.models import Job, JobStatus
+
+    return [
+        j.id
+        for j in s.exec(
+            select(Job).where(
+                Job.case_id == case_id,
+                Job.plugin == "sqlite_recover",
+                Job.status == JobStatus.succeeded,
+            )
+        )
+    ]
+
+
+@router.get("/cases/{case_id}/databases")
+def list_databases(case_id: str, s: SessionDep) -> list[dict[str, Any]]:
+    from tracelume import sqlbench
+
+    return [
+        {
+            "id": r.id,
+            "path": r.path,
+            "sha256": r.sha256,
+            "size": r.size,
+            "tables": {n: t.get("rows") for n, t in r.tables.items()},
+            "recovered": r.recovered,
+        }
+        for r in sqlbench.list_databases(_sqlite_jobs(s, case_id))
+    ]
+
+
+@router.get("/cases/{case_id}/databases/{db_id}/schema")
+def database_schema(case_id: str, db_id: str, s: SessionDep) -> list[dict[str, Any]]:
+    from tracelume import sqlbench
+
+    try:
+        return sqlbench.schema(sqlbench.resolve(db_id, _sqlite_jobs(s, case_id)))
+    except sqlbench.SqlError as e:
+        raise HTTPException(404, str(e)) from e
+
+
+class QueryIn(BaseModel):
+    sql: str
+
+
+@router.post("/cases/{case_id}/databases/{db_id}/query")
+def database_query(
+    case_id: str, db_id: str, body: QueryIn, s: SessionDep, actor: ActorDep
+) -> dict[str, Any]:
+    from tracelume import sqlbench
+
+    try:
+        ref = sqlbench.resolve(db_id, _sqlite_jobs(s, case_id))
+    except sqlbench.SqlError as e:
+        raise HTTPException(404, str(e)) from e
+    audit.record(
+        s,
+        actor,
+        "sql.query",
+        case_id=case_id,
+        object_type="database",
+        object_id=db_id,
+        hash_before=ref.sha256,
+        details={"db": ref.path, "sql": body.sql[:4000]},
+    )
+    try:
+        return sqlbench.run_query(ref, body.sql)
+    except sqlbench.SqlError as e:
+        raise HTTPException(400, str(e)) from e
