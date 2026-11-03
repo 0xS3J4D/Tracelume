@@ -1,5 +1,8 @@
 # Chainsaw (GPL-3.0, © WithSecure Labs) built from the pinned tag; its detection rules are bundled.
 FROM rust:1 AS build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      clang libclang-dev cmake autoconf automake libtool pkg-config \
+ && rm -rf /var/lib/apt/lists/*
 ARG CHAINSAW_REF=v2.17.1
 RUN git clone --depth 1 --branch ${CHAINSAW_REF} https://github.com/WithSecureLabs/chainsaw /src \
  && cd /src && cargo build --release --locked
