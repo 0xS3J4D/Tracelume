@@ -12,7 +12,7 @@ docker info >/dev/null 2>&1 || { echo "Docker is installed but not running. Star
 
 images() {  # pull prebuilt images; build only what is missing (e.g. no network to the registry)
   "${DC[@]}" "$@" pull --quiet --ignore-pull-failures || true
-  "${DC[@]}" "$@" up --no-start --build=never >/dev/null 2>&1 || "${DC[@]}" "$@" up --no-start
+  "${DC[@]}" "$@" up --no-start --no-build >/dev/null 2>&1 || "${DC[@]}" "$@" up --no-start
 }
 
 case "${1:-start}" in
