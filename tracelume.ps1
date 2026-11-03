@@ -11,7 +11,7 @@ docker info *> $null; if ($LASTEXITCODE -ne 0) { Write-Error "Docker Desktop is 
 
 function Get-Images([string[]]$Extra) {
   docker compose @Extra pull --quiet --ignore-pull-failures
-  docker compose @Extra up --no-start --build=never *> $null
+  docker compose @Extra up --no-start --no-build *> $null
   if ($LASTEXITCODE -ne 0) { docker compose @Extra up --no-start }
 }
 
