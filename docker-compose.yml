@@ -15,13 +15,14 @@ x-app: &app
     TRACELUME_EXAMINER: ${TRACELUME_EXAMINER:-examiner}
     TRACELUME_IMAGE_REGISTRY: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}
     TRACELUME_BACKUPS_DIR: /backups
+    TRACELUME_USB_ACQUISITION: ${TRACELUME_USB_ACQUISITION:-0}
     TRACELUME_EVIDENCE_VOLUME: tracelume_evidence
     TRACELUME_WORKSPACE_VOLUME: tracelume_workspace
   volumes:
     - evidence:/data/evidence
     - workspace:/data/workspace
-    - ${TRACELUME_IMPORT_DIR:-./import}:/import:ro
-    - ${TRACELUME_BACKUP_DIR:-./backups}:/backups
+    - ${TRACELUME_IMPORT_DIR:-./import}:/import:ro,z
+    - ${TRACELUME_BACKUP_DIR:-./backups}:/backups:z
   depends_on:
     db: { condition: service_healthy }
     redis: { condition: service_started }
@@ -119,6 +120,11 @@ services:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: mvt/Dockerfile }
     image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/mvt:0.1.0
+  # iPhone backup over USB (Linux hosts). Started per job by the worker, never as a service.
+  acquire-ios:
+    profiles: ["tools"]
+    build: { context: ./plugins/_acquire_ios }
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/acquire-ios:0.1.0
   # Optional local LLM for the case assistant:  ./tracelume ai
   # Runs on the internal network only; models are downloaded by the launcher, not by this service.
   ollama:

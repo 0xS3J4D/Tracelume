@@ -440,3 +440,68 @@ def export_case(case_id: str, s: SessionDep, actor: ActorDep) -> Response:
             "Content-Disposition": f'attachment; filename="tracelume-case-{safe}-{stamp}.zip"'
         },
     )
+
+
+# ---------- iPhone acquisition (Linux + USB) ----------
+@router.get("/acquire/status")
+def acquire_status() -> dict[str, Any]:
+    from tracelume.config import get_settings
+
+    return {"usb_available": get_settings().usb_acquisition}
+
+
+class AcquireIn(BaseModel):
+    mode: str = "list"  # list | backup
+    udid: str | None = None
+
+
+@router.post("/cases/{case_id}/acquire/ios", status_code=201)
+def acquire_ios(case_id: str, body: AcquireIn, s: SessionDep, actor: ActorDep) -> Job:
+    import re
+
+    from tracelume.config import get_settings
+
+    _open_case(s, case_id)
+    if not get_settings().usb_acquisition:
+        raise HTTPException(
+            400,
+            "USB acquisition is only available when Tracelume runs on a "
+            "Linux host (start it with ./tracelume start)",
+        )
+    if body.mode not in ("list", "backup"):
+        raise HTTPException(422, "mode must be list or backup")
+    if body.mode == "backup" and not re.fullmatch(r"[0-9A-Fa-f-]{24,40}", body.udid or ""):
+        raise HTTPException(422, "a valid device id (UDID) is required")
+    job = Job(
+        case_id=case_id,
+        evidence_id=None,
+        plugin="ios_acquire",
+        plugin_version="0.1.0",
+        params={"mode": body.mode, "udid": body.udid, "actor": actor},
+    )
+    s.add(job)
+    audit.record(
+        s,
+        actor,
+        "acquire.create",
+        case_id=case_id,
+        object_type="job",
+        object_id=job.id,
+        details={"mode": body.mode, "udid": body.udid},
+        commit=False,
+    )
+    s.commit()
+    s.refresh(job)
+    jobs.job_dir(job.id).mkdir(parents=True, exist_ok=True)
+    jobs.log_path(job.id).touch()
+    jobs.enqueue(job)
+    s.refresh(job)
+    return job
+
+
+@router.get("/jobs/{job_id}/devices")
+def acquire_devices(job_id: str) -> list[dict[str, Any]]:
+    import json
+
+    p = jobs.job_dir(job_id) / "output" / "devices.json"
+    return json.loads(p.read_text()) if p.exists() else []

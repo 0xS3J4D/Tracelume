@@ -18,6 +18,7 @@ from tracelume.plugins.runner import run_in_docker
 
 Runner = Callable[..., int]
 RUNNERS: dict[str, Runner] = {"docker": run_in_docker}
+ACQUIRE_RUNNERS: dict[str, Callable[..., int]] = {}  # tests register fakes here
 BATCH = 1000
 CANCEL_MARK = "__cancel_requested__"
 
@@ -62,9 +63,13 @@ def execute_job(job_id: str) -> None:
         job = s.get(Job, job_id)
         if job is None:
             return
+        actor = settings.examiner
+        if job.plugin == "ios_acquire":
+            logf.close()
+            _execute_acquisition(job_id, out_rel, out_dir)
+            return
         ev = s.get(Evidence, job.evidence_id)
         assert ev is not None
-        actor = settings.examiner
         if job.status == JobStatus.cancelled:
             log("[tracelume] job was cancelled before it started")
             logf.close()
@@ -177,3 +182,103 @@ def counts_by_type(s: Session, case_id: str) -> dict[str, int]:
         .group_by(Artifact.type)
     ).all()
     return {t: int(n) for t, n in rows}
+
+
+def _execute_acquisition(job_id: str, out_rel: str, out_dir: Path) -> None:
+    from tracelume import acquire
+    from tracelume.evidence import ingest_stream
+    from tracelume.models import EvidenceKind
+
+    settings = get_settings()
+    logf = log_path(job_id).open("a", encoding="utf-8")
+
+    def log(line: str) -> None:
+        logf.write(line + "\n")
+        logf.flush()
+
+    with Session(get_engine()) as s:
+        job = s.get(Job, job_id)
+        assert job is not None
+        actor = str(job.params.get("actor") or settings.examiner)
+        mode = job.params.get("mode", "list")
+        udid = str(job.params.get("udid", ""))
+        job.status, job.started_at = JobStatus.running, utcnow()
+        s.add(job)
+        audit.record(
+            s,
+            actor,
+            "acquire.start",
+            case_id=job.case_id,
+            object_type="job",
+            object_id=job.id,
+            details={"mode": mode, "udid": udid},
+        )
+
+        def is_cancelled() -> bool:
+            with Session(get_engine()) as s2:
+                j = s2.get(Job, job_id)
+                return j is not None and j.error == CANCEL_MARK
+
+        try:
+            argv = ["list"] if mode == "list" else ["backup", udid]
+            runner = acquire.ACQ_RUNNER if not ACQUIRE_RUNNERS else ACQUIRE_RUNNERS["fake"]
+            code = runner(settings, argv, out_rel, log, is_cancelled)
+            job.exit_code = code
+            s.refresh(job)
+            if job.error == CANCEL_MARK:
+                raise CancelledError
+            if code != 0:
+                raise RuntimeError(f"acquisition exited with code {code}")
+            if mode == "backup":
+                log("[tracelume] packaging backup and registering it as evidence")
+                z = acquire.zip_backup(out_dir, udid)
+                dev = acquire.device_info(out_dir)
+                enc = (
+                    (out_dir / "encryption.txt").read_text()
+                    if (out_dir / "encryption.txt").exists()
+                    else ""
+                )
+                notes = (
+                    f"Logical backup over USB (idevicebackup2). Device: {dev.get('DeviceName')} "
+                    f"{dev.get('ProductType')} iOS {dev.get('ProductVersion')}, serial "
+                    f"{dev.get('SerialNumber')}, UDID {udid}. {enc.strip()}"
+                )
+                with z.open("rb") as f:
+                    ev = ingest_stream(
+                        s,
+                        case_id=job.case_id,
+                        actor=actor,
+                        kind=EvidenceKind.ios_backup,
+                        filename=z.name,
+                        stream=f,
+                        acquired_by=actor,
+                        acquired_at=job.started_at,
+                        notes=notes,
+                    )
+                z.unlink()
+                job = s.get(Job, job_id) or job
+                job.evidence_id = ev.id
+                log(f"[tracelume] evidence registered: {ev.original_filename} sha256 {ev.sha256}")
+            job.status = JobStatus.succeeded
+        except CancelledError:
+            s.rollback()
+            job = s.get(Job, job_id) or job
+            job.status, job.error = JobStatus.cancelled, "cancelled by examiner"
+        except Exception as exc:  # noqa: BLE001
+            s.rollback()
+            job = s.get(Job, job_id) or job
+            job.status, job.error = JobStatus.failed, str(exc)
+            log(f"[tracelume] FAILED: {exc}")
+        finally:
+            job.finished_at = utcnow()
+            s.add(job)
+            audit.record(
+                s,
+                actor,
+                "acquire.finish",
+                case_id=job.case_id,
+                object_type="job",
+                object_id=job.id,
+                details={"status": job.status, "evidence_id": job.evidence_id},
+            )
+            logf.close()

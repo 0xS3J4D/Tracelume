@@ -29,7 +29,18 @@ try:
 except ImportError:  # pragma: no cover
     pass
 
-IMAGE = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif", ".bmp", ".tif", ".tiff"}
+IMAGE = {
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".heic",
+    ".heif",
+    ".bmp",
+    ".tif",
+    ".tiff",
+}
 VIDEO = {".mp4", ".mov", ".m4v", ".3gp", ".avi", ".mkv", ".webm"}
 MAX_FILE = 2 * 1024**3
 KEEP = (

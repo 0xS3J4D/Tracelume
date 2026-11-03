@@ -23,7 +23,9 @@ def test_aleapp_parses_synthetic_sms(tmp_path: Path) -> None:
     plugin = load_plugins(REPO / "plugins")["aleapp"]
     out = tmp_path / "out"
     ctx = RunContext(
-        Path("/evidence/synthetic-android.zip"), Path("/output"), EvidenceKind.android_fs
+        Path("/evidence/synthetic-android.zip"),
+        Path("/output"),
+        EvidenceKind.android_fs,
     )
     run_tool(plugin.image, plugin.build_command(ctx), dump, out)
     msgs = [
