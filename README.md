@@ -18,85 +18,99 @@ offline.</p>
 <a href="DONATE.md#monero"><img alt="Donate Monero" src="https://img.shields.io/badge/Donate-Monero-FF6600?style=for-the-badge&logo=monero&logoColor=white"></a>
 </p>
 
-![Recovered deleted chat messages](docs/screenshots/recovered.png)
+<p align="center"><img src="docs/screenshots/demo.gif" alt="Tracelume demo: create a case, add a phone dump, run all analyses, review recovered messages, timeline and SQL" width="900"></p>
 
-## Why Tracelume
-Examiners juggle a dozen excellent open source tools, each with its own output format, time
-zone and report. Tracelume puts them behind **one case**: evidence is registered once and hashed,
-every tool runs in an isolated container, and all results land in **one searchable, UTC-normalised
-timeline** that you can tag, annotate and report on. The audit log is tamper-evident.
+Tracelume puts the open source forensic tools you already trust behind **one case and one
+interface**. Register evidence once, run the tools in isolated containers, and work with all the
+results in a single UTC timeline: messages, photos, locations, files, logs and records recovered
+from deleted data. Everything you do is written to a tamper-evident audit log, and the case
+exports to a PDF report with hashes. It runs on your own computer, and nothing leaves it.
 
-## Features
-**Evidence and integrity**
-- SHA-256 + MD5 on ingest; originals stored read-only; **re-verified before every analysis**
-- Hash-chained **audit log** of every action (chain of custody), with a built-in verifier
-- Each tool sees **only its own evidence item**, read-only, with **no network**
-
-**Acquisition**
-- **iPhone backup over USB** directly in the app (libimobiledevice; Linux hosts, beta): a standard
-  logical backup of an unlocked, trusted device, hashed and registered as evidence automatically
-
-**Analysis (17 integrations)**
-| Evidence | Tools |
-|---|---|
-| Android | ALEAPP, SQLite deleted-record recovery, media (ExifTool), Plaso |
-| iPhone / iTunes backup | iLEAPP, MVT (spyware indicators), SQLite recovery, media |
-| Disk images (raw, E01) | The Sleuth Kit (**deleted files + content recovery**), Plaso |
-| Windows triage (KAPE / Velociraptor) | Hayabusa, Chainsaw, EVTX, RegRipper, MFTECmd |
-| Memory | Volatility 3 (Windows, Linux, macOS) |
-| Anything | YARA with your own rules |
-
-**Investigation**
-- **Unified timeline** with zoom: drag across the chart to narrow the time window
-- Artifact browser with a **conversation view**, **photo gallery**, **offline map** and a raw-data panel
-- **Deleted data**: deleted files (TSK, $MFT) and records recovered from SQLite free space, freelists and WAL files
-- **SQL workbench**: read-only queries on every database found in a phone dump
-- **Case assistant (AI, optional, local-first)** answers questions about the case by calling search
-  tools, shows every step, and cites the artifacts it relies on
-- Global search (Ctrl+K), tags, notes, keyboard-driven (`j`/`k`, `t`, `n`, `/`, `?`)
-
-**Reporting**
-- PDF/HTML report with evidence hashes, processing steps, tagged findings, notes and the audit log
-- Full **case export** (.zip): report, artifacts (CSV + JSONL), audit log, manifest, `SHA256SUMS`
-- **Backups** from Settings with one click (database, evidence, results, checksum), plus restore from the launcher
-
-| Timeline | SQL workbench | Gallery & map |
-|---|---|---|
-| ![](docs/screenshots/timeline.png) | ![](docs/screenshots/sql.png) | ![](docs/screenshots/map.png) |
-
-## Install
-Works on **Windows 10/11, macOS (Intel and Apple Silicon) and Linux**. Requirements: **Docker
-Desktop** (Windows/macOS) or **Docker Engine 26+** (Linux), 8 GB RAM, and disk space for your
-evidence. On Apple Silicon the forensic tool images run through Docker Desktop's x86 emulation
-(they work, but are slower).
+## Try it in 5 minutes
+You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows, macOS) or Docker Engine 26+ (Linux). Start Docker first.
 
 ```bash
-git clone https://github.com/0xS3J4D/tracelume && cd tracelume
-./tracelume tools     # first time: downloads the forensic tool images
-./tracelume start     # opens http://127.0.0.1:8080
+git clone https://github.com/0xS3J4D/tracelume
+cd tracelume
+./tracelume start                                              # macOS / Linux
+powershell -ExecutionPolicy Bypass -File .\tracelume.ps1 start  # Windows
 ```
-On Windows (PowerShell): `.\tracelume.ps1 tools`, then `.\tracelume.ps1 start`.
 
-**Try it with demo data:** `python3 scripts/make_synthetic_android.py` creates
-`import/synthetic-android.zip`. This is a fake phone with SMS, a chat app containing deleted
-messages, and geotagged photos. Create a case, register the file as *Android*, then click **Run all**.
+The first start builds the core tools (10–20 minutes); after that it starts in seconds. Your
+browser opens **http://127.0.0.1:8080**. Then:
 
-More: [User guide](docs/user-guide.md) · [Assistant](docs/assistant.md) · [Writing a plugin](docs/writing-a-plugin.md) · [Architecture](docs/architecture.md) · [Security](SECURITY.md)
+1. **Cases → Create case.**
+2. **Evidence → From the import folder →** `synthetic-android.zip` → type *Android* → **Register evidence**.
+   It's a [synthetic phone](demo/README.md) with SMS, a chat app with deleted messages, and geotagged photos.
+3. **Run all**, and wait until the jobs show *succeeded*.
+4. Open **Artifacts → Recovered (deleted) records**, then try the **Timeline**, the **Map**, the **SQL** tab and **Export PDF report**.
 
-## Privacy and network use
-Tracelume is only reachable from your own computer (`127.0.0.1`). The analysis services run on a
-Docker network with no internet route, and tool containers run with networking disabled. The
-network is used only when **you** download tool images or an AI model. A remote AI endpoint is
-used only if you configure one **and** allow it for a specific case.
+## What works today
+✅ verified in CI on real tool images · 🧪 beta (works, not yet tested on real devices or models) · 🗺 planned
 
-## ⚖️ Legal
-Use Tracelume **only on data you are legally authorised to examine** (under a warrant, with
-consent, under your organisation's mandate, or on training data). You are responsible for
-complying with applicable law, including privacy and data-protection law. Tracelume does **not**
-unlock devices, bypass security or exploit vulnerabilities, and such contributions are not
-accepted. Results, including AI output, must be validated by a qualified examiner. The software
-is provided without warranty (GPL-3.0 §15–16). Wrapped tools keep their own licences; some, such
-as MVT's, include usage conditions. See [CREDITS.md](CREDITS.md).
+**Evidence and integrity**
+- ✅ SHA-256 and MD5 at ingest, read-only storage, re-verification before every analysis
+- ✅ Hash-chained audit log of every action, with a built-in verifier
+- ✅ Each tool runs in its own container with no network and sees only its own evidence item
+- ✅ Register files from an import folder (for large images) or upload them
+- 🧪 iPhone backup over USB (libimobiledevice, Linux hosts)
+
+**Analysis**
+| Evidence | Tools |
+|---|---|
+| Android | ✅ ALEAPP · ✅ SQLite deleted-record recovery · ✅ photos and videos (ExifTool) |
+| iPhone | ✅ iLEAPP · ✅ MVT (spyware indicators) · ✅ SQLite recovery · ✅ photos and videos |
+| Disk images (raw, E01) | ✅ The Sleuth Kit, including deleted files and content recovery · 🧪 Plaso |
+| Windows triage (KAPE, Velociraptor) | ✅ RegRipper · ✅ MFTECmd ($MFT, deleted entries) · 🧪 Hayabusa · 🧪 Chainsaw · 🧪 EVTX |
+| Memory images | ✅ Volatility 3 (Windows, Linux, macOS) |
+| Any file | ✅ YARA with your own rules |
+
+**Investigation**
+- ✅ One timeline for every source, in UTC; drag across the chart to zoom
+- ✅ Artifact browser with conversation view, photo gallery, offline map and raw data
+- ✅ Recovered deleted data: SQLite free space, freelists and WAL; deleted files (TSK, $MFT)
+- ✅ Read-only SQL on every database found in a phone dump
+- ✅ Search across all cases (Ctrl+K), tags and notes, keyboard shortcuts
+- 🧪 Case assistant (AI): local model by default, shows each step and cites the artifacts it used
+
+**Reporting and operations**
+- ✅ PDF and HTML report: evidence hashes, processing, tagged findings, notes, audit log
+- ✅ Case export (.zip) with all artifacts as CSV and JSONL, plus `SHA256SUMS`
+- ✅ One-click backups in Settings; restore from the launcher
+- ✅ Runs on Windows, macOS (Intel and Apple Silicon) and Linux
+
+**Planned:** user accounts and roles · scaling past 10 million artifacts · people and accounts
+graph across apps · known-file hash sets (NSRL) · more chat-app parsers · encrypted iPhone
+backups · a one-click installer. See the [roadmap](docs/architecture.md#7-status-and-roadmap).
+
+## Screenshots
+| Recovered deleted messages | Timeline | SQL on a phone database |
+|---|---|---|
+| ![](docs/screenshots/recovered.png) | ![](docs/screenshots/timeline.png) | ![](docs/screenshots/sql.png) |
+| **Photos with GPS on an offline map** | **Case overview** | **Audit log** |
+| ![](docs/screenshots/map.png) | ![](docs/screenshots/case-overview.png) | ![](docs/screenshots/audit.png) |
+
+## How it works
+A FastAPI backend with PostgreSQL and a job queue, a React interface, and one Docker image per
+tool. The worker checks the evidence hash, starts the tool's container with the evidence mounted
+read-only and networking disabled, then turns the tool's output into common, UTC-timestamped
+artifacts. Details: [architecture](docs/architecture.md) · [chain of custody](docs/chain-of-custody.md) · [security model](SECURITY.md).
+
+**Privacy.** The interface is only reachable from your own computer (127.0.0.1). Tools run without
+network access. Tracelume only goes online when you download tool images or an AI model, and it
+uses a remote AI service only if you configure one and allow it for a specific case.
+
+## Documentation
+[User guide](docs/user-guide.md) · [Case assistant](docs/assistant.md) · [Writing a plugin](docs/writing-a-plugin.md) · [Test data](docs/test-data.md) · [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+
+## Legal
+Use Tracelume only on data you are legally authorised to examine: under a warrant, with consent,
+under your organisation's mandate, or on training data. You are responsible for following the
+law, including privacy law. Tracelume does not unlock devices, bypass security or exploit
+vulnerabilities, and we don't accept contributions that do. A qualified examiner must validate
+the results, including anything the AI assistant says. There is no warranty (GPL-3.0, sections
+15–16). The wrapped tools keep their own licences, and some, such as MVT's, add conditions of use;
+see [CREDITS.md](CREDITS.md).
 
 ## 💛 Support Tracelume
 Tracelume is free and always will be. Donations fund development time, test phones and disks,
