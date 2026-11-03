@@ -1,0 +1,152 @@
+"""Job orchestration: verify evidence, run tool, normalise output, record custody."""
+
+import logging
+import traceback
+from collections.abc import Callable
+from pathlib import Path
+
+from sqlmodel import Session, select
+
+from tracelume import audit
+from tracelume.config import Settings, get_settings
+from tracelume.db import get_engine
+from tracelume.evidence import verify
+from tracelume.models import Artifact, Evidence, Job, JobStatus, utcnow
+from tracelume.plugins.base import Plugin, RunContext
+from tracelume.plugins.registry import get_plugin
+from tracelume.plugins.runner import run_in_docker
+
+Runner = Callable[[Plugin, Settings, str, str, RunContext, Callable[[str], None]], int]
+RUNNERS: dict[str, Runner] = {"docker": run_in_docker}
+BATCH = 1000
+
+
+def job_dir(job_id: str) -> Path:
+    return get_settings().workspace_dir / "jobs" / job_id
+
+
+def log_path(job_id: str) -> Path:
+    return job_dir(job_id) / "job.log"
+
+
+def enqueue(job: Job) -> None:
+    settings = get_settings()
+    if settings.job_queue == "rq":
+        from redis import Redis
+        from rq import Queue
+
+        Queue("tracelume", connection=Redis.from_url(settings.redis_url)).enqueue(
+            execute_job, job.id, job_timeout=60 * 60 * 24
+        )
+    else:
+        execute_job(job.id)
+
+
+def execute_job(job_id: str) -> None:
+    settings = get_settings()
+    out_rel = f"jobs/{job_id}/output"
+    out_dir = settings.workspace_dir / out_rel
+    out_dir.mkdir(parents=True, exist_ok=True)
+    logf = log_path(job_id).open("a", encoding="utf-8")
+
+    def log(line: str) -> None:
+        logf.write(line + "\n")
+        logf.flush()
+
+    with Session(get_engine()) as s:
+        job = s.get(Job, job_id)
+        if job is None:
+            return
+        ev = s.get(Evidence, job.evidence_id)
+        assert ev is not None
+        actor = settings.examiner
+        job.status, job.started_at = JobStatus.running, utcnow()
+        s.add(job)
+        audit.record(
+            s,
+            actor,
+            "job.start",
+            case_id=job.case_id,
+            object_type="job",
+            object_id=job.id,
+            details={"plugin": job.plugin},
+        )
+        try:
+            log(f"[tracelume] verifying evidence {ev.original_filename} (sha256 {ev.sha256})")
+            if not verify(s, ev, actor, reason=f"pre-job {job.id}"):
+                raise RuntimeError(f"evidence integrity check failed: {ev.verify_status}")
+            log("[tracelume] evidence hash verified")
+            plugin = get_plugin(job.plugin)
+            ctx = RunContext(
+                evidence_path=Path("/evidence"),
+                output_dir=out_dir,
+                evidence_kind=ev.kind,
+                params=job.params,
+                log=logging.getLogger(f"tracelume.job.{job.id}"),
+            )
+            log(f"[tracelume] running {plugin.meta.tool_name} via image {plugin.image}")
+            code = RUNNERS[settings.runner](plugin, settings, ev.stored_path, out_rel, ctx, log)
+            job.exit_code = code
+            if code != 0:
+                raise RuntimeError(f"tool exited with code {code}")
+            log("[tracelume] parsing tool output")
+            parse_ctx = RunContext(
+                evidence_path=Path("/evidence"),
+                output_dir=out_dir,
+                evidence_kind=ev.kind,
+                params=job.params,
+            )
+            count = 0
+            for a in plugin.parse_output(parse_ctx):
+                s.add(
+                    Artifact(
+                        case_id=job.case_id,
+                        evidence_id=ev.id,
+                        job_id=job.id,
+                        type=a.type,
+                        timestamp=a.timestamp,
+                        timestamp_kind=a.timestamp_kind,
+                        source_plugin=plugin.meta.name,
+                        source_path=a.source_path,
+                        title=a.title[:500],
+                        data=a.data,
+                    )
+                )
+                count += 1
+                if count % BATCH == 0:
+                    s.flush()
+            job.artifact_count = count
+            job.status = JobStatus.succeeded
+            log(f"[tracelume] done: {count} artifacts")
+        except Exception as exc:  # noqa: BLE001 — any failure marks the job failed
+            s.rollback()
+            fresh = s.get(Job, job_id)
+            assert fresh is not None
+            job = fresh
+            job.status, job.error = JobStatus.failed, str(exc)
+            log(f"[tracelume] FAILED: {exc}")
+            log(traceback.format_exc())
+        finally:
+            job.finished_at = utcnow()
+            s.add(job)
+            audit.record(
+                s,
+                actor,
+                "job.finish",
+                case_id=job.case_id,
+                object_type="job",
+                object_id=job.id,
+                details={"status": job.status, "artifacts": job.artifact_count},
+            )
+            logf.close()
+
+
+def counts_by_type(s: Session, case_id: str) -> dict[str, int]:
+    from sqlalchemy import func
+
+    rows = s.exec(
+        select(Artifact.type, func.count())
+        .where(Artifact.case_id == case_id)
+        .group_by(Artifact.type)
+    ).all()
+    return {t: int(n) for t, n in rows}
