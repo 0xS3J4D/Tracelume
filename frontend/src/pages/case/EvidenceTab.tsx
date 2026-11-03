@@ -17,13 +17,28 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
   const [progress, setProgress] = useState<number | null>(null);
   const [last, setLast] = useState<Evidence | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [source, setSource] = useState<"upload" | "folder">("upload");
+  const [folderFiles, setFolderFiles] = useState<{ path: string; size: number }[]>([]);
+  const [folderPick, setFolderPick] = useState("");
   const navigate = useNavigate();
 
   const load = () => api.evidence(caseId).then(setItems).catch((e) => setError(e.message));
   useEffect(() => { load(); api.plugins().then(setPlugins); }, [caseId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (source === "folder") api.importFolder().then((f) => { setFolderFiles(f); setFolderPick(f[0]?.path ?? ""); });
+  }, [source]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (source === "folder") {
+      if (!folderPick) return;
+      setError(null); setLast(null); setProgress(1);
+      try {
+        const ev = await api.importEvidence(caseId, { path: folderPick, kind, acquired_by: acquiredBy || undefined, notes: notes || undefined });
+        setLast(ev); load(); onChange();
+      } catch (err) { setError((err as Error).message); } finally { setProgress(null); }
+      return;
+    }
     if (!file) return;
     setError(null); setLast(null); setProgress(0);
     const form = new FormData();
@@ -52,11 +67,26 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
     <div className="overflow-auto p-6">
       <form onSubmit={submit} className="card mb-6 grid gap-3 p-4 md:grid-cols-2" aria-label="Register evidence">
         <div className="md:col-span-2">
-          <label className="label" htmlFor="ev-file">Evidence file</label>
-          <input id="ev-file" type="file" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+          <div role="radiogroup" aria-label="Evidence source" className="mb-2 flex gap-4 text-sm">
+            <label className="flex items-center gap-1.5"><input type="radio" checked={source === "upload"} onChange={() => setSource("upload")} /> Upload a file</label>
+            <label className="flex items-center gap-1.5"><input type="radio" checked={source === "folder"} onChange={() => setSource("folder")} /> From the import folder (large images)</label>
+          </div>
+          {source === "upload" ? (
+            <>
+              <label className="label" htmlFor="ev-file">Evidence file</label>
+              <input id="ev-file" type="file" className="input" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            </>
+          ) : (
+            <>
+              <label className="label" htmlFor="ev-folder">File in the import folder</label>
+              <select id="ev-folder" className="input" value={folderPick} onChange={(e) => setFolderPick(e.target.value)}>
+                {folderFiles.map((f) => <option key={f.path} value={f.path}>{f.path} ({fmtBytes(f.size)})</option>)}
+              </select>
+              {!folderFiles.length && <p className="mt-1 text-xs text-mark">The import folder is empty. Copy files into the <code>import</code> folder next to Tracelume.</p>}
+            </>
+          )}
           <p className="mt-1 text-xs text-slate-400">
-            The original is hashed (SHA-256 + MD5) while it is written, then stored read-only.
-            For very large images, drop them in the import folder instead.
+            Tracelume copies the file, hashes it (SHA-256 and MD5) and stores the copy read-only. The original is never changed.
           </p>
         </div>
         <div>
@@ -74,7 +104,7 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
           <textarea id="ev-notes" className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
         <div className="flex items-center gap-4 md:col-span-2">
-          <button className="btn-primary" disabled={!file || progress !== null}>Register evidence</button>
+          <button className="btn-primary" disabled={(source === "upload" ? !file : !folderPick) || progress !== null}>Register evidence</button>
           {progress !== null && (
             <div className="flex flex-1 items-center gap-3" aria-live="polite">
               <div className="h-2 flex-1 rounded bg-ink-700" role="progressbar" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>

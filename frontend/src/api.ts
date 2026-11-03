@@ -117,6 +117,9 @@ export const api = {
   updateCase: (id: string, b: Partial<Pick<Case, "name" | "number" | "description" | "status">>) =>
     req<Case>(`/cases/${id}`, json("PATCH", b)),
   evidence: (caseId: string) => req<Evidence[]>(`/cases/${caseId}/evidence`),
+  importFolder: () => req<{ path: string; size: number }[]>("/import"),
+  importEvidence: (caseId: string, b: { path: string; kind: EvidenceKind; acquired_by?: string; notes?: string }) =>
+    req<Evidence>(`/cases/${caseId}/evidence/import`, json("POST", b)),
   verify: (id: string) => req<Evidence>(`/evidence/${id}/verify`, { method: "POST" }),
   plugins: () => req<PluginInfo[]>("/plugins"),
   jobs: (caseId: string) => req<Job[]>(`/cases/${caseId}/jobs`),

@@ -505,3 +505,18 @@ def acquire_devices(job_id: str) -> list[dict[str, Any]]:
 
     p = jobs.job_dir(job_id) / "output" / "devices.json"
     return json.loads(p.read_text()) if p.exists() else []
+
+
+@router.get("/import")
+def list_import_folder() -> list[dict[str, Any]]:
+    """Files placed in the import folder, ready to be registered as evidence."""
+    from tracelume.config import get_settings
+
+    base = get_settings().import_dir
+    if not base.is_dir():
+        return []
+    out = []
+    for p in sorted(base.rglob("*")):
+        if p.is_file() and not p.name.startswith("."):
+            out.append({"path": str(p.relative_to(base)), "size": p.stat().st_size})
+    return out[:500]

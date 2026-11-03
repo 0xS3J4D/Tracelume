@@ -128,3 +128,17 @@ def test_import_dir_rejects_traversal(client: TestClient) -> None:
         f"/api/cases/{case_id}/evidence/import", json={"path": "../../etc/passwd", "kind": "other"}
     )
     assert r.status_code == 400
+
+
+def test_import_folder_listing_and_registration(client: TestClient, tmp_path: Path) -> None:
+    imp = tmp_path / "import"
+    imp.mkdir(exist_ok=True)
+    (imp / "phone.zip").write_bytes(PAYLOAD)
+    (imp / ".hidden").write_text("x")
+    assert client.get("/api/import").json() == [{"path": "phone.zip", "size": len(PAYLOAD)}]
+    case_id = _case(client)
+    r = client.post(
+        f"/api/cases/{case_id}/evidence/import", json={"path": "phone.zip", "kind": "android_fs"}
+    )
+    assert r.status_code == 201 and r.json()["sha256"] == hashlib.sha256(PAYLOAD).hexdigest()
+    assert (imp / "phone.zip").exists()  # the original is copied, never moved

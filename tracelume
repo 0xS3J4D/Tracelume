@@ -33,6 +33,7 @@ images() {  # pull prebuilt images; build only what is missing (e.g. no network 
 }
 
 mkdir -p import backups && chmod 0777 backups 2>/dev/null || true
+[ -f import/synthetic-android.zip ] || cp demo/synthetic-android.zip import/ 2>/dev/null || true
 
 case "${1:-start}" in
   start)

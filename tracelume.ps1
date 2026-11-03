@@ -6,6 +6,7 @@ Set-Location $PSScriptRoot
 $Port = if ($env:TRACELUME_PORT) { $env:TRACELUME_PORT } else { "8080" }
 $Url = "http://127.0.0.1:$Port"
 New-Item -ItemType Directory -Force import, backups | Out-Null
+if (-not (Test-Path import\synthetic-android.zip)) { Copy-Item demo\synthetic-android.zip import\ -ErrorAction SilentlyContinue }
 
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Write-Error "Install Docker Desktop first: https://www.docker.com/products/docker-desktop/"; exit 1 }
 docker info *> $null; if ($LASTEXITCODE -ne 0) { Write-Error "Docker Desktop is not running. Start it and try again."; exit 1 }
