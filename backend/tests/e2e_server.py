@@ -37,6 +37,27 @@ def fake(plugin, settings, ev_rel, out_rel, ctx, on_line):  # type: ignore[no-un
 
 jobs.RUNNERS["fake"] = fake
 
+
+def scripted_model(url, headers, payload):  # type: ignore[no-untyped-def]
+    """Deterministic stand-in for a local LLM: one search, then a cited answer."""
+    import json
+
+    tool_msgs = [m for m in payload["messages"] if m["role"] == "tool"]
+    if "max_tokens" in payload:
+        return {"choices": [{"message": {"content": "OK"}}]}
+    if not tool_msgs:
+        call = {"id": "1", "type": "function", "function": {
+            "name": "search_artifacts", "arguments": json.dumps({"types": ["message"]})}}
+        return {"choices": [{"message": {"content": "", "tool_calls": [call]}}]}
+    items = json.loads(tool_msgs[-1]["content"])["items"]
+    lines = [f"- {i['title']} [a:{i['id']}]" for i in items[:3]]
+    return {"choices": [{"message": {"content": "## Messages found\n" + "\n".join(lines)}}]}
+
+
+from tracelume import assistant  # noqa: E402
+
+assistant.TRANSPORT["http"] = scripted_model
+
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8000
     uvicorn.run("tracelume.main:app", host="127.0.0.1", port=port)

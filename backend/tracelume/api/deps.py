@@ -9,8 +9,11 @@ from tracelume.db import get_session
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-def get_actor(x_examiner: Annotated[str | None, Header()] = None) -> str:
-    return (x_examiner or get_settings().examiner).strip()[:100] or "examiner"
+def get_actor(s: SessionDep, x_examiner: Annotated[str | None, Header()] = None) -> str:
+    from tracelume import settings_store
+
+    configured = settings_store.get(s, "examiner").get("name")
+    return (x_examiner or configured or get_settings().examiner).strip()[:100] or "examiner"
 
 
 ActorDep = Annotated[str, Depends(get_actor)]

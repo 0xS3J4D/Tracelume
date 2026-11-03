@@ -18,5 +18,21 @@ case "${1:-start}" in
   logs)   docker compose logs -f --tail=100 ;;
   tools)  docker compose --profile tools build ;;   # build all forensic tool images
   update) git pull --ff-only && docker compose up -d --build ;;
-  *) echo "usage: ./tracelume [start|stop|status|logs|tools|update]"; exit 2 ;;
+  ai)
+    # Download a model ONCE with network access, then serve it offline on the internal network.
+    model="${2:-qwen2.5:7b-instruct}"
+    echo "Downloading ${model} (one-time, needs internet)…"
+    docker run --rm -v tracelume_ollama:/root/.ollama --entrypoint sh ollama/ollama:0.40.13 \
+      -c "ollama serve >/dev/null 2>&1 & sleep 3; ollama pull '${model}'"
+    docker compose --profile ai up -d ollama
+    echo "Local model ready. In Tracelume → Settings, set model to: ${model}" ;;
+  backup)
+    # Consistent backup of the case database + evidence + workspace into ./backups
+    mkdir -p backups; stamp="$(date -u +%Y%m%dT%H%M%SZ)"
+    docker compose exec -T db pg_dump -U tracelume -Fc tracelume > "backups/db-${stamp}.dump"
+    docker run --rm -v tracelume_evidence:/e:ro -v tracelume_workspace:/w:ro -v "$PWD/backups:/b" \
+      alpine:3.20 tar czf "/b/data-${stamp}.tgz" -C / e w
+    (cd backups && sha256sum "db-${stamp}.dump" "data-${stamp}.tgz" > "SHA256SUMS-${stamp}")
+    echo "Backup written to backups/ (with SHA256SUMS-${stamp})" ;;
+  *) echo "usage: ./tracelume [start|stop|status|logs|tools|ai [model]|backup|update]"; exit 2 ;;
 esac
