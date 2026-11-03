@@ -76,11 +76,21 @@ services:
     build: ./plugins/sqlite_recover
     image: tracelume/sqlite-recover:0.1.0
 
+  # Optional local LLM for the case assistant:  ./tracelume ai
+  # Runs on the internal network only; models are downloaded by the launcher, not by this service.
+  ollama:
+    profiles: ["ai"]
+    image: ollama/ollama:0.40.13
+    volumes: ["ollama:/root/.ollama"]
+    environment: { OLLAMA_KEEP_ALIVE: 30m }
+    networks: [backend]
+
 networks:
   backend: { internal: true }   # no route to the internet
   frontend: {}
 
 volumes:
+  ollama: { name: tracelume_ollama }
   db:
   evidence: { name: tracelume_evidence }
   workspace: { name: tracelume_workspace }

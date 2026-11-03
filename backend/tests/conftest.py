@@ -1,4 +1,5 @@
 import os
+import shutil
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -6,6 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 REPO = Path(__file__).resolve().parents[2]
+ALEAPP_FIXTURE = REPO / "plugins/aleapp/tests/fixtures"
 
 
 @pytest.fixture
@@ -35,3 +37,19 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
     get_engine().dispose()
     get_settings.cache_clear()
     get_engine.cache_clear()
+
+
+@pytest.fixture(autouse=True)
+def fake_runner(monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
+    calls: list[list[str]] = []
+
+    def run(plugin, settings, ev_rel, out_rel, ctx, on_line):  # type: ignore[no-untyped-def]
+        calls.append(plugin.build_command(ctx))
+        on_line("fake tool running")
+        shutil.copytree(ALEAPP_FIXTURE, settings.workspace_dir / out_rel, dirs_exist_ok=True)
+        return 0
+
+    from tracelume import jobs
+
+    monkeypatch.setitem(jobs.RUNNERS, "fake", run)
+    return calls
