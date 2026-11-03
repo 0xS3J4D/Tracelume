@@ -28,7 +28,7 @@ file system dumps, memory images, logs) and:
 Requirements: Docker (Docker Desktop on Windows/macOS, Docker Engine on Linux).
 
 ```bash
-git clone https://github.com/OWNER/tracelume && cd tracelume
+git clone https://github.com/0xS3J4D/tracelume && cd tracelume
 ./tracelume tools     # build the forensic tool images (first time only)
 ./tracelume start     # → http://127.0.0.1:8080
 ```
