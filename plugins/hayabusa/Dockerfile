@@ -1,6 +1,9 @@
 # Hayabusa (AGPL-3.0, © Yamato Security) built from the pinned source tag, with its Sigma-based
 # rule set bundled at build time so it runs with no network.
 FROM rust:1 AS build
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      clang libclang-dev cmake autoconf automake libtool pkg-config \
+ && rm -rf /var/lib/apt/lists/*
 ARG HAYABUSA_REF=v4.3.1
 RUN git clone --depth 1 --branch ${HAYABUSA_REF} https://github.com/Yamato-Security/hayabusa /src \
  && git clone --depth 1 https://github.com/Yamato-Security/hayabusa-rules /src/rules \
