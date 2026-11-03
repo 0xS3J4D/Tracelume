@@ -1,0 +1,4 @@
+name: chainsaw
+image: tracelume/chainsaw:0.1.0
+build: plugins/chainsaw/Dockerfile
+tool: {name: Chainsaw, version: v2.17.1, license: GPL-3.0, url: https://github.com/WithSecureLabs/chainsaw}

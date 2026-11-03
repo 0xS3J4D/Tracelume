@@ -1,0 +1,4 @@
+name: mftecmd
+image: tracelume/mftecmd:0.1.0
+build: plugins/mftecmd/Dockerfile
+tool: {name: MFTECmd, version: 2026.10.1, license: MIT, url: https://github.com/EricZimmerman/MFTECmd}

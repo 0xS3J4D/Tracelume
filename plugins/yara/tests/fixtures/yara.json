@@ -1,0 +1,1 @@
+[{"rule": "Demo", "file": "data/x.txt", "strings": [{"offset": 16, "id": "$a", "data": "password"}]}]

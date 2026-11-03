@@ -1,0 +1,4 @@
+name: yara
+image: tracelume/yara:0.1.0
+build: plugins/yara/Dockerfile
+tool: {name: YARA, version: "4.5 (Debian)", license: BSD-3-Clause, url: https://github.com/VirusTotal/yara}

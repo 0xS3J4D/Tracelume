@@ -1,0 +1,4 @@
+name: mvt
+image: tracelume/mvt:0.1.0
+build: plugins/mvt/Dockerfile
+tool: {name: MVT, version: 2026.11.2, license: MVT License 1.1, url: https://github.com/mvt-project/mvt}

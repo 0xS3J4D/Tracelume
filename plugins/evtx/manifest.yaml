@@ -1,0 +1,4 @@
+name: evtx
+image: tracelume/evtx:0.1.0
+build: plugins/evtx/Dockerfile
+tool: {name: evtx_dump, version: 0.15.1, license: MIT / Apache-2.0, url: https://github.com/omerbenamram/evtx}
