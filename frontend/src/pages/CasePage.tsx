@@ -7,10 +7,11 @@ import EvidenceTab from "./case/EvidenceTab";
 import JobsTab from "./case/JobsTab";
 import ArtifactsTab from "./case/ArtifactsTab";
 import AuditTab from "./case/AuditTab";
+import TimelineTab from "./case/TimelineTab";
 
 const TABS = [
   ["", "Overview"], ["evidence", "Evidence"], ["jobs", "Jobs"],
-  ["artifacts", "Artifacts"], ["audit", "Audit log"],
+  ["timeline", "Timeline"], ["artifacts", "Artifacts"], ["audit", "Audit log"],
 ] as const;
 
 export default function CasePage() {
@@ -26,7 +27,13 @@ export default function CasePage() {
   const c = summary.case;
   return (
     <>
-      <PageHeader title={c.name} sub={[c.number, `Examiner: ${c.examiner}`].filter(Boolean).join(" · ")} />
+      <PageHeader title={c.name} sub={[c.number, `Examiner: ${c.examiner}`].filter(Boolean).join(" · ")}
+        actions={
+          <div className="flex gap-2">
+            <a className="btn-ghost" href={`/api/cases/${caseId}/report.html`} download>Report (HTML)</a>
+            <a className="btn-primary" href={`/api/cases/${caseId}/report.pdf`} download>Export PDF report</a>
+          </div>
+        } />
       <nav aria-label="Case sections" className="flex gap-1 border-b border-ink-700 px-4">
         {TABS.map(([path, label]) => (
           <NavLink key={path} end to={`/cases/${caseId}${path ? `/${path}` : ""}`}
@@ -41,6 +48,7 @@ export default function CasePage() {
         {tab === "evidence" && <EvidenceTab caseId={caseId} onChange={refresh} />}
         {tab === "jobs" && <JobsTab caseId={caseId} />}
         {tab === "artifacts" && <ArtifactsTab caseId={caseId} types={Object.keys(summary.artifact_counts)} />}
+        {tab === "timeline" && <TimelineTab caseId={caseId} types={Object.keys(summary.artifact_counts)} />}
         {tab === "audit" && <AuditTab caseId={caseId} />}
       </div>
     </>
