@@ -1,0 +1,8 @@
+name: sqlite_recover
+image: tracelume/sqlite-recover:0.1.0
+build: plugins/sqlite_recover/Dockerfile
+tool:
+  name: Tracelume SQLite carver
+  version: 0.1.0
+  license: GPL-3.0-or-later
+  url: https://github.com/0xS3J4D/tracelume
