@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, fmtUtc, type CaseSummary, type Job } from "../../api";
 import { StatusBadge } from "../../components/ui";
+import { typeColor, typeLabel } from "../../components/typeColors";
 
 export default function OverviewTab({ caseId, summary }: { caseId: string; summary: CaseSummary }) {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -24,9 +25,9 @@ export default function OverviewTab({ caseId, summary }: { caseId: string; summa
           <ul className="space-y-2">
             {counts.map(([type, n]) => (
               <li key={type}>
-                <Link to={`/cases/${caseId}/artifacts?type=${type}`} className="grid grid-cols-[8rem_1fr_4rem] items-center gap-3 text-sm hover:text-accent">
-                  <span>{type}</span>
-                  <span className="h-2 rounded bg-ink-700"><span className="block h-2 rounded bg-accent" style={{ width: `${(n / max) * 100}%` }} /></span>
+                <Link to={`/cases/${caseId}/artifacts?type=${type}`} className="grid grid-cols-[13rem_1fr_4rem] items-center gap-3 text-sm hover:text-accent">
+                  <span>{typeLabel(type)}</span>
+                  <span className="h-2 rounded bg-ink-700"><span className="block h-2 rounded" style={{ width: `${(n / max) * 100}%`, background: typeColor(type) }} /></span>
                   <span className="text-right font-mono tabular-nums">{n}</span>
                 </Link>
               </li>

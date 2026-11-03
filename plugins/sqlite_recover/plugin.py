@@ -10,10 +10,39 @@ from __future__ import annotations
 
 import json
 from collections.abc import Iterable
+from datetime import UTC, datetime
 from typing import Any, ClassVar
 
 from tracelume.models import EvidenceKind
 from tracelume.plugins.base import ArtifactIn, Plugin, PluginMeta, RunContext
+
+
+def possible_times(values: list[Any]) -> list[dict[str, Any]]:
+    """Integers that decode to a date between 2000 and 2040 as Unix s/ms/µs or Apple/Mac
+    absolute time. Shown as hints only; carved rows have no trusted time."""
+    out = []
+    lo, hi = datetime(2000, 1, 1, tzinfo=UTC), datetime(2040, 1, 1, tzinfo=UTC)
+    for i, v in enumerate(values):
+        if not isinstance(v, int) or isinstance(v, bool):
+            continue
+        for unit, conv in (
+            ("unix seconds", lambda x: datetime.fromtimestamp(x, UTC)),
+            ("unix milliseconds", lambda x: datetime.fromtimestamp(x / 1000, UTC)),
+            ("unix microseconds", lambda x: datetime.fromtimestamp(x / 1_000_000, UTC)),
+            ("Apple absolute seconds", lambda x: datetime.fromtimestamp(x + 978307200, UTC)),
+            (
+                "Apple absolute nanoseconds",
+                lambda x: datetime.fromtimestamp(x / 1e9 + 978307200, UTC),
+            ),
+        ):
+            try:
+                dt = conv(v)
+            except (OverflowError, OSError, ValueError):
+                continue
+            if lo <= dt <= hi:
+                out.append({"column": i, "unit": unit, "utc": dt.isoformat()})
+                break
+    return out
 
 
 def _preview(values: list[Any]) -> str:
@@ -68,5 +97,5 @@ class SqliteRecoverPlugin(Plugin):
                     title=f"[{r['source']}] {r['db'].rsplit('/', 1)[-1]} › {table}: "
                     f"{_preview(r['values'])}",
                     source_path=r["db"],
-                    data=r,
+                    data={**r, "possible_times_utc": possible_times(r["values"])},
                 )

@@ -57,7 +57,19 @@ def _photo(path: Path, lat: float, lon: float, when: str, offset: str | None) ->
         m = int((v - d) * 60)
         return (float(d), float(m), round(((v - d) * 60 - m) * 60, 2))
 
-    img = Image.new("RGB", (960, 720), (40, 90 + int(lat) % 100, 140))
+    from PIL import ImageDraw
+
+    img = Image.new("RGB", (960, 720))
+    draw = ImageDraw.Draw(img)
+    seed = int(lat * 1000) % 97
+    for y in range(720):  # sky-to-ground gradient, different per photo
+        t = y / 720
+        sky = (int(70 + 120 * t + seed), int(130 + 60 * t), int(200 - 80 * t))
+        draw.line([(0, y), (960, y)], fill=sky if y < 430 else (40 + seed, 90, 60))
+    draw.ellipse((620 + seed, 90, 740 + seed, 210), fill=(250, 220, 140))
+    draw.polygon([(0, 430), (260, 250 + seed), (520, 430)], fill=(60, 80, 90))
+    draw.polygon([(380, 430), (700, 220), (960, 430)], fill=(80, 100, 110))
+    draw.text((24, 680), "SYNTHETIC TEST IMAGE", fill=(255, 255, 255))
     exif = Image.Exif()
     exif[0x010F], exif[0x0110] = "Synthetic", "Demo Camera"
     ifd = exif.get_ifd(0x8769)
