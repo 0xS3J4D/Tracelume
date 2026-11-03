@@ -20,9 +20,15 @@ may be crafted to attack parsers.
   every job, and the audit log is a SHA-256 hash chain (`GET /api/audit/verify`).
   The hash chain makes edits detectable, but it cannot prevent them by someone with
   database access. Export the report or the chain head regularly.
-- **Known limitation (M1):** there is no authentication (single-examiner mode), and in compose
-  mode a tool container can read the whole evidence volume, not just its own item.
-  Both are on the roadmap.
+- **Isolation per job:** in compose mode each tool container mounts only its own evidence item
+  (read-only) and its own output folder, through Docker volume sub-paths (Docker Engine 26+).
+- **Browser attacks on a local app:** a host allow-list blocks DNS rebinding, writes from
+  foreign origins are rejected (CSRF), and the UI is served with a strict Content-Security-Policy.
+- **AI assistant:** local by default. Remote endpoints are refused unless allowed per case,
+  API keys are never logged, and assistant tools are read-only and limited to the case.
+- **Known limitation:** there is no user authentication (single-examiner workstation model).
+  Do not expose port 8080 to a network. For multi-user labs, put Tracelume behind an
+  authenticating reverse proxy.
 
 ## Scope
 Tracelume does not and will not include device unlocking, passcode or lock-screen bypass,

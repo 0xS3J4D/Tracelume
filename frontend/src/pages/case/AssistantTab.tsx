@@ -72,7 +72,7 @@ export default function AssistantTab({ caseId }: { caseId: string }) {
               <RichText text={m.content} onCite={async (id) => setCited(await api.artifact(id))} />
               {m.steps.length > 0 && (
                 <details className="mt-2 text-xs text-slate-400">
-                  <summary className="cursor-pointer hover:text-slate-200">{m.steps.length} tool steps</summary>
+                  <summary className="cursor-pointer hover:text-slate-200">{m.steps.length} tool {m.steps.length === 1 ? "step" : "steps"}</summary>
                   <ol className="mt-1 space-y-1">
                     {m.steps.map((s, i) => (
                       <li key={i} className="rounded bg-ink-950 p-2 font-mono">
