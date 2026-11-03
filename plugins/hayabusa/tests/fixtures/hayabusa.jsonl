@@ -1,0 +1,2 @@
+{"Timestamp":"2024-05-01T09:15:02.123Z","RuleTitle":"Logon Failure (Wrong Password)","Level":"low","Computer":"WS-01","Channel":"Sec","EventID":4625,"RecordID":1234,"Details":{"TgtUser":"demo"},"RuleID":"x"}
+{"Timestamp":"2024-05-01T09:20:00.000Z","RuleTitle":"Suspicious PowerShell","Level":"high","Computer":"WS-01","Channel":"PwSh","EventID":4104}

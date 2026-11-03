@@ -19,7 +19,8 @@ test("case → evidence → ALEAPP job → artifacts → audit", async ({ page }
   await expect(page.getByText(/Registered synthetic-android.zip/)).toBeVisible();
   await expect(page.getByText(/SHA-256 [0-9a-f]{64}/).first()).toBeVisible();
 
-  await page.getByRole("button", { name: "Run ALEAPP" }).click();
+  await page.getByRole("button", { name: "Choose…" }).click();
+  await page.getByRole("menuitem", { name: /ALEAPP/ }).click();
   await expect(page.getByText("succeeded")).toBeVisible();
   await expect(page.getByLabel("Job log")).toContainText("evidence hash verified");
 

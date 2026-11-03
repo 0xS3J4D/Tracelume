@@ -11,19 +11,19 @@ and keeps its own licence. Tracelume does not relicense or bundle their source.
 | [Plaso / log2timeline](https://github.com/log2timeline/plaso) | Plaso developers (Joachim Metz, Daniel White, et al.) | Apache-2.0 | Super-timeline | ✅ |
 | [Volatility 3](https://github.com/volatilityfoundation/volatility3) | Volatility Foundation | Volatility Software License | Memory analysis | ✅ |
 | [The Sleuth Kit](https://github.com/sleuthkit/sleuthkit) | Brian Carrier and contributors | IBM Public License / CPL / GPL (per component) | Disk & file systems, deleted files | ✅ |
-| [RegRipper 3](https://github.com/keydet89/RegRipper3.0) | Harlan Carvey | MIT | Windows registry | planned |
-| [Hayabusa](https://github.com/Yamato-Security/hayabusa) | Yamato Security | AGPL-3.0 | Windows event log triage | planned |
-| [Chainsaw](https://github.com/WithSecureLabs/chainsaw) | WithSecure Labs | GPL-3.0 | Event log hunting (Sigma) | planned |
-| [bulk_extractor](https://github.com/simsong/bulk_extractor) | Simson Garfinkel and contributors | MIT / public domain | Feature carving | planned |
+| [RegRipper 3](https://github.com/keydet89/RegRipper3.0) | Harlan Carvey | MIT | Windows registry | ✅ |
+| [Hayabusa](https://github.com/Yamato-Security/hayabusa) | Yamato Security | AGPL-3.0 | Windows event log triage | ✅ |
+| [Chainsaw](https://github.com/WithSecureLabs/chainsaw) | WithSecure Labs | GPL-3.0 | Event log hunting (Sigma) | ✅ |
 | [ExifTool](https://exiftool.org/) | Phil Harvey | Artistic / GPL (Perl terms) | Media metadata | ✅ |
-| [YARA](https://github.com/VirusTotal/yara) | VirusTotal / Victor M. Alvarez | BSD-3-Clause | Pattern scanning | planned |
-| [MVT](https://github.com/mvt-project/mvt) | Amnesty International Security Lab | MVT License 1.1 | Mobile compromise indicators | planned |
+| [YARA](https://github.com/VirusTotal/yara) | VirusTotal / Victor M. Alvarez | BSD-3-Clause | Pattern scanning | ✅ |
+| [MVT](https://github.com/mvt-project/mvt) | Amnesty International Security Lab | MVT License 1.1 | Mobile compromise indicators | ✅ |
 | [Natural Earth](https://www.naturalearthdata.com/) via world-atlas | Natural Earth / Mike Bostock | Public domain / ISC | Offline basemap | ✅ |
-| [unfurl](https://github.com/obsidianforensics/unfurl) | Ryan Benson | Apache-2.0 | URL decoding | planned |
-| [evtx](https://github.com/omerbenamram/evtx) | Omer Ben-Amram | MIT / Apache-2.0 | EVTX parsing | planned |
-| [MFTECmd](https://github.com/EricZimmerman/MFTECmd) | Eric Zimmerman | MIT | NTFS $MFT / $J | planned |
+| [evtx](https://github.com/omerbenamram/evtx) | Omer Ben-Amram | MIT / Apache-2.0 | EVTX parsing | ✅ |
+| [MFTECmd](https://github.com/EricZimmerman/MFTECmd) | Eric Zimmerman | MIT | NTFS $MFT / $J | ✅ |
 
-Licences are checked again whenever a plugin is added. Some licences (for example MVT's)
+Hayabusa, Chainsaw and evtx_dump are compiled from their pinned source tags inside their images; the
+Hayabusa/Chainsaw rule sets and MVT's public indicators are bundled at image build time so analysis
+runs offline. Licences are checked again whenever a plugin is added. Some licences (for example MVT's)
 put conditions on use, and the plugin docs must state them.
 
 | Tracelume SQLite carver | Tracelume contributors | GPL-3.0-or-later | Deleted SQLite records | ✅ |

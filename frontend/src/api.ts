@@ -1,5 +1,5 @@
 export type EvidenceKind =
-  | "disk_image" | "android_fs" | "ios_backup" | "ios_fs" | "memory_image" | "logs" | "other";
+  | "disk_image" | "android_fs" | "ios_backup" | "ios_fs" | "memory_image" | "windows_triage" | "logs" | "other";
 
 export const EVIDENCE_KINDS: { value: EvidenceKind; label: string }[] = [
   { value: "android_fs", label: "Android file system / backup" },
@@ -7,6 +7,7 @@ export const EVIDENCE_KINDS: { value: EvidenceKind; label: string }[] = [
   { value: "ios_fs", label: "iOS file system" },
   { value: "disk_image", label: "Disk image" },
   { value: "memory_image", label: "Memory image" },
+  { value: "windows_triage", label: "Windows triage collection (KAPE / Velociraptor .zip)" },
   { value: "logs", label: "Logs" },
   { value: "other", label: "Other" },
 ];
@@ -38,6 +39,7 @@ export interface Artifact {
 export interface PluginInfo {
   name: string; version: string; description: string; tool_name: string; tool_version: string;
   tool_license: string; tool_url: string; supported_evidence: EvidenceKind[];
+  params_schema: Record<string, { type: "text" | "string"; label: string; required?: boolean; placeholder?: string }>;
 }
 export interface AuditEntry {
   id: number; ts: string; actor: string; action: string; object_type: string | null;
@@ -111,8 +113,8 @@ export const api = {
   plugins: () => req<PluginInfo[]>("/plugins"),
   jobs: (caseId: string) => req<Job[]>(`/cases/${caseId}/jobs`),
   job: (id: string) => req<Job>(`/jobs/${id}`),
-  createJob: (caseId: string, evidence_id: string, plugin: string) =>
-    req<Job>(`/cases/${caseId}/jobs`, json("POST", { evidence_id, plugin })),
+  createJob: (caseId: string, evidence_id: string, plugin: string, params: Record<string, string> = {}) =>
+    req<Job>(`/cases/${caseId}/jobs`, json("POST", { evidence_id, plugin, params })),
   artifacts: (caseId: string, params: ArtifactQuery) =>
     req<{ total: number; items: Artifact[] }>(`/cases/${caseId}/artifacts?${qs(params)}`),
   artifact: (id: string) => req<Artifact>(`/artifacts/${id}`),

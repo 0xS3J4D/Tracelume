@@ -88,6 +88,34 @@ services:
     build: ./plugins/volatility3
     image: tracelume/volatility3:0.1.0
 
+  hayabusa:
+    profiles: ["tools"]
+    build: { context: ./plugins, dockerfile: hayabusa/Dockerfile }
+    image: tracelume/hayabusa:0.1.0
+  chainsaw:
+    profiles: ["tools"]
+    build: { context: ./plugins, dockerfile: chainsaw/Dockerfile }
+    image: tracelume/chainsaw:0.1.0
+  evtx:
+    profiles: ["tools"]
+    build: { context: ./plugins, dockerfile: evtx/Dockerfile }
+    image: tracelume/evtx:0.1.0
+  regripper:
+    profiles: ["tools"]
+    build: { context: ./plugins, dockerfile: regripper/Dockerfile }
+    image: tracelume/regripper:0.1.0
+  mftecmd:
+    profiles: ["tools"]
+    build: { context: ./plugins, dockerfile: mftecmd/Dockerfile }
+    image: tracelume/mftecmd:0.1.0
+  yara:
+    profiles: ["tools"]
+    build: { context: ./plugins, dockerfile: yara/Dockerfile }
+    image: tracelume/yara:0.1.0
+  mvt:
+    profiles: ["tools"]
+    build: { context: ./plugins, dockerfile: mvt/Dockerfile }
+    image: tracelume/mvt:0.1.0
   # Optional local LLM for the case assistant:  ./tracelume ai
   # Runs on the internal network only; models are downloaded by the launcher, not by this service.
   ollama:
