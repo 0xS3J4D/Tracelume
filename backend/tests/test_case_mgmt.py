@@ -4,10 +4,8 @@ import zipfile
 
 from fastapi.testclient import TestClient
 
-from tests.test_workspace import populated  # noqa: F401
 
-
-def test_close_reopen_and_export(client: TestClient, populated: str) -> None:  # noqa: F811
+def test_close_reopen_and_export(client: TestClient, populated: str) -> None:
     r = client.patch(f"/api/cases/{populated}", json={"status": "closed", "number": "N-7"})
     assert r.json()["status"] == "closed" and r.json()["number"] == "N-7"
     blocked = client.post(

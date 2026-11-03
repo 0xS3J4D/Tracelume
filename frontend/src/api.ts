@@ -103,6 +103,12 @@ export interface Settings {
   examiner: { name: string };
 }
 
+export interface BackupInfo { name: string; size: number; created: string; sha256: string | null }
+export interface BackupState {
+  status: { running: boolean; error: string | null; last: { name: string } | null };
+  backups: BackupInfo[]; folder: string;
+}
+
 export const api = {
   cases: () => req<Case[]>("/cases"),
   createCase: (b: { name: string; number?: string; description?: string }) =>
@@ -148,6 +154,8 @@ export const api = {
     req<AssistantMessage>(`/cases/${caseId}/assistant`, json("POST", { question })),
   recover: (artifactId: string) => req<Job>(`/artifacts/${artifactId}/recover`, { method: "POST" }),
   cancelJob: (jobId: string) => req<Job>(`/jobs/${jobId}/cancel`, { method: "POST" }),
+  backups: () => req<BackupState>("/backups"),
+  createBackup: () => req<{ started: boolean }>("/backups", { method: "POST" }),
   notes: (caseId: string, artifactId?: string) =>
     req<Note[]>(`/cases/${caseId}/notes?${qs({ artifact_id: artifactId })}`),
   createNote: (caseId: string, body: string, artifactId?: string) =>

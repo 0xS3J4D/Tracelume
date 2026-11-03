@@ -80,6 +80,8 @@ test("case → evidence → ALEAPP job → artifacts → audit", async ({ page }
   await page.getByLabel(/Name recorded/).fill("E2E Examiner");
   await page.getByRole("button", { name: "Save" }).first().click();
   await expect(page.getByRole("status")).toContainText("Examiner saved");
+  await page.getByRole("button", { name: "Create backup now" }).click();
+  await expect(page.getByText(/tracelume-backup-.*\.tar\.gz/)).toBeVisible();
   await page.getByRole("button", { name: "Test connection" }).click();
   await expect(page.getByText(/Connected/)).toBeVisible();
   await page.goBack();

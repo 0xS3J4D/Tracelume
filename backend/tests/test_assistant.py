@@ -4,7 +4,6 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.test_workspace import populated  # noqa: F401  (fixture)
 from tracelume import assistant
 
 
@@ -51,7 +50,7 @@ class FakeModel:
 
 def test_assistant_uses_tools_and_cites(
     client: TestClient,
-    populated: str,  # noqa: F811
+    populated: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     model = FakeModel(fake_citation=True)
@@ -74,7 +73,7 @@ def test_assistant_uses_tools_and_cites(
 
 def test_remote_endpoint_requires_case_opt_in(
     client: TestClient,
-    populated: str,  # noqa: F811
+    populated: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setitem(assistant.TRANSPORT, "http", FakeModel())
@@ -92,7 +91,7 @@ def test_remote_endpoint_requires_case_opt_in(
     assert "sk-secret" not in json.dumps(client.get(f"/api/cases/{populated}/audit").json())
 
 
-def test_tools_are_case_scoped(client: TestClient, populated: str) -> None:  # noqa: F811
+def test_tools_are_case_scoped(client: TestClient, populated: str) -> None:
     from sqlmodel import Session
 
     from tracelume.db import get_engine

@@ -163,3 +163,24 @@ def ask(case_id: str, body: AskIn, s: SessionDep, actor: ActorDep) -> AssistantM
     s.commit()
     s.refresh(reply)
     return reply
+
+
+# ---------- backups ----------
+@router.get("/backups")
+def get_backups() -> dict[str, Any]:
+    from tracelume import backup
+
+    return {
+        "status": backup.STATUS,
+        "backups": backup.list_backups(),
+        "folder": str(backup.backups_dir()),
+    }
+
+
+@router.post("/backups", status_code=202)
+def make_backup(actor: ActorDep) -> dict[str, Any]:
+    from tracelume import backup
+
+    if not backup.start_backup(actor):
+        raise HTTPException(409, "a backup is already running")
+    return {"started": True}
