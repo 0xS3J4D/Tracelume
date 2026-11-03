@@ -93,7 +93,7 @@ is provided without warranty (GPL-3.0 §15–16). Wrapped tools keep their own l
 as MVT's, include usage conditions. See [CREDITS.md](CREDITS.md).
 
 ## Support the project
-Tracelume is free and open source. If it helps your work, consider [donating](DONATE.md) (BTC, ETH, SOL), starring
+Tracelume is free and open source. If it helps your work, consider [donating](DONATE.md) (BTC, ETH, XMR), starring
 the repo, or [contributing](CONTRIBUTING.md).
 
 ## Credits and licence
