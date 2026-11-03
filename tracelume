@@ -27,9 +27,19 @@ if [ "$(uname -s)" = Linux ] && [ -d /dev/bus/usb ]; then
   fi
 fi
 
+# Tools prepared by 'start' (enough for phones, disk images and the demo); 'tools' adds the rest.
+CORE_TOOLS=(aleapp ileapp sqlite-recover media sleuthkit yara)
+
 images() {  # pull prebuilt images; build only what is missing (e.g. no network to the registry)
   "${DC[@]}" "$@" pull --quiet --ignore-pull-failures || true
   "${DC[@]}" "$@" up --no-start --no-build >/dev/null 2>&1 || "${DC[@]}" "$@" up --no-start
+}
+
+core_tools() {
+  echo "Preparing core forensic tools (first run may take a few minutes)…"
+  "${DC[@]}" --profile tools pull --quiet --ignore-pull-failures "${CORE_TOOLS[@]}" || true
+  "${DC[@]}" --profile tools up --no-start "${CORE_TOOLS[@]}" >/dev/null
+  "${DC[@]}" --profile tools rm -f "${CORE_TOOLS[@]}" >/dev/null 2>&1 || true
 }
 
 mkdir -p import backups && chmod 0777 backups 2>/dev/null || true
@@ -38,6 +48,7 @@ mkdir -p import backups && chmod 0777 backups 2>/dev/null || true
 case "${1:-start}" in
   start)
     images
+    core_tools
     "${DC[@]}" up -d
     printf 'Waiting for Tracelume'; for _ in $(seq 60); do curl -sf "$URL/api/health" >/dev/null && break; printf '.'; sleep 1; done; echo
     echo "Tracelume is running at ${URL} (only reachable from this computer)."
@@ -79,7 +90,7 @@ usage: ./tracelume <command>
   start            start Tracelume and open it in the browser (default)
   stop             stop all services (data is kept)
   status | logs    show service status / follow logs
-  tools            download the forensic tool images (first run, and after updates)
+  tools            add every forensic tool (Windows logs, memory, Plaso, MVT, …)
   ai [model]       download a local AI model once, then run it offline
   backup           back up the database, evidence and results to ./backups
                    (also available in the app under Settings → Backups)

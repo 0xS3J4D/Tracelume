@@ -17,9 +17,18 @@ function Get-Images([string[]]$Extra) {
   if ($LASTEXITCODE -ne 0) { docker compose @Extra up --no-start }
 }
 
+$CoreTools = @("aleapp", "ileapp", "sqlite-recover", "media", "sleuthkit", "yara")
+function Get-CoreTools {
+  Write-Host "Preparing core forensic tools (first run may take a few minutes)..."
+  docker compose --profile tools pull --quiet --ignore-pull-failures @CoreTools
+  docker compose --profile tools up --no-start @CoreTools *> $null
+  docker compose --profile tools rm -f @CoreTools *> $null
+}
+
 switch ($Command) {
   "start" {
     Get-Images @()
+    Get-CoreTools
     docker compose up -d
     Write-Host -NoNewline "Waiting for Tracelume"
     for ($i = 0; $i -lt 60; $i++) {
