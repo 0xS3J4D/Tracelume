@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tracelume report — {{ case.name }}</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 20mm; @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #64748b; } @bottom-left { content: "{{ case.name|e }} · generated {{ generated }}"; font-size: 8pt; color: #64748b; } }
+  body { font-family: "Inter", "Segoe UI", Helvetica, Arial, sans-serif; color: #0b1220; font-size: 10pt; line-height: 1.45; max-width: 1000px; margin: 0 auto; padding: 0 12px; }
+  h1 { font-size: 20pt; margin: 6px 0 2px; } h2 { font-size: 13pt; border-bottom: 2px solid #2dd4bf; padding-bottom: 3px; margin-top: 26px; page-break-after: avoid; }
+  h3 { font-size: 11pt; margin: 14px 0 4px; }
+  .muted { color: #64748b; } .mono { font-family: "JetBrains Mono", Consolas, monospace; font-size: 8.5pt; word-break: break-all; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; } th, td { text-align: left; vertical-align: top; padding: 4px 6px; border-bottom: 1px solid #e2e8f0; }
+  th { font-size: 8pt; text-transform: uppercase; letter-spacing: .04em; color: #475569; background: #f8fafc; }
+  tr { page-break-inside: avoid; }
+  .ok { color: #047857; font-weight: 600; } .bad { color: #b91c1c; font-weight: 600; }
+  .tag { display: inline-block; padding: 0 6px; border-radius: 3px; font-size: 8pt; color: #0b1220; }
+  .note { background: #f8fafc; border-left: 3px solid #f59e0b; padding: 4px 8px; margin: 4px 0; }
+  .kv { display: grid; grid-template-columns: 160px 1fr; gap: 2px 12px; }
+  header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+  .disclaimer { font-size: 8pt; color: #64748b; margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <div><img src="data:image/svg+xml;base64,{{ logo }}" alt="Tracelume" style="height:28px"></div>
+  <div class="muted" style="text-align:right">Forensic examination report<br>Generated {{ generated }} by {{ actor }}</div>
+</header>
+
+<h1>{{ case.name }}</h1>
+<div class="kv">
+  <span class="muted">Case number</span><span>{{ case.number or "—" }}</span>
+  <span class="muted">Examiner</span><span>{{ case.examiner }}</span>
+  <span class="muted">Opened</span><span>{{ case.created_at|utc }}</span>
+  <span class="muted">Description</span><span>{{ case.description or "—" }}</span>
+  <span class="muted">Audit chain</span><span>{% if chain_ok %}<span class="ok">intact</span>{% else %}<span class="bad">BROKEN — audit log altered</span>{% endif %} <span class="mono">head {{ chain_head }}</span></span>
+  <span class="muted">Software</span><span>Tracelume {{ version }}</span>
+</div>
+
+<h2>1. Evidence</h2>
+<table>
+  <tr><th>Item</th><th>Type</th><th>Size</th><th>Hashes</th><th>Integrity</th></tr>
+  {% for e in evidence %}
+  <tr>
+    <td><b>{{ e.original_filename }}</b><br><span class="muted">acquired by {{ e.acquired_by or "—" }} · ingested {{ e.ingested_at|utc }}</span>{% if e.notes %}<br>{{ e.notes }}{% endif %}</td>
+    <td>{{ e.kind }}</td><td>{{ e.size|bytes }}</td>
+    <td class="mono">SHA-256 {{ e.sha256 }}<br>MD5 {{ e.md5 }}</td>
+    <td>{% if e.verify_status == "ok" %}<span class="ok">verified</span>{% else %}<span class="bad">{{ e.verify_status }}</span>{% endif %}<br><span class="muted">{{ e.last_verified_at|utc }}</span></td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>2. Processing</h2>
+<table>
+  <tr><th>Plugin</th><th>Tool</th><th>Evidence</th><th>Started</th><th>Finished</th><th>Status</th><th>Artifacts</th></tr>
+  {% for j in jobs %}
+  <tr><td>{{ j.plugin }} {{ j.plugin_version }}</td><td>{{ tools.get(j.plugin, "") }}</td><td>{{ ev_names.get(j.evidence_id, "") }}</td>
+      <td>{{ j.started_at|utc }}</td><td>{{ j.finished_at|utc }}</td><td>{{ j.status }}</td><td>{{ j.artifact_count }}</td></tr>
+  {% endfor %}
+</table>
+<h3>Artifacts by type</h3>
+<table><tr><th>Type</th><th>Count</th></tr>{% for t, n in counts %}<tr><td>{{ t }}</td><td>{{ n }}</td></tr>{% endfor %}</table>
+
+<h2>3. Tagged findings</h2>
+{% if not tagged %}<p class="muted">No artifacts have been tagged.</p>{% endif %}
+{% for tag, items in tagged %}
+<h3><span class="tag" style="background: {{ tag.color }}">{{ tag.name }}</span> <span class="muted">({{ items|length }})</span></h3>
+<table>
+  <tr><th style="width:130px">Time (UTC)</th><th style="width:80px">Type</th><th>Finding</th><th style="width:28%">Source</th></tr>
+  {% for a in items %}
+  <tr>
+    <td>{{ a.timestamp|utc }}</td><td>{{ a.type }}</td>
+    <td>{{ a.title }}{% for n in notes_by_artifact.get(a.id, []) %}<div class="note">{{ n.body }} <span class="muted">— {{ n.author }}, {{ n.created_at|utc }}</span></div>{% endfor %}</td>
+    <td class="mono">{{ a.source_plugin }} · {{ a.source_path or "—" }}<br>id {{ a.id }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endfor %}
+
+<h2>4. Examiner notes</h2>
+{% for n in case_notes %}<div class="note">{{ n.body }} <span class="muted">— {{ n.author }}, {{ n.created_at|utc }}</span></div>{% else %}<p class="muted">No general notes.</p>{% endfor %}
+
+<h2>5. Audit log (chain of custody)</h2>
+<table>
+  <tr><th style="width:130px">Time (UTC)</th><th>Actor</th><th>Action</th><th>Details</th><th>Hash after</th></tr>
+  {% for r in audit %}
+  <tr><td>{{ r.ts|utc }}</td><td>{{ r.actor }}</td><td class="mono">{{ r.action }}</td><td class="mono">{{ r.details|tojson }}</td><td class="mono">{{ r.hash_after or "" }}</td></tr>
+  {% endfor %}
+</table>
+
+<p class="disclaimer">Generated by Tracelume, open source software (GPL-3.0). Artifacts were extracted by the third-party tools listed in section 2 and normalised to UTC. Findings must be validated by a qualified examiner. Tagged items and notes reflect examiner judgement at the time of export.</p>
+</body>
+</html>

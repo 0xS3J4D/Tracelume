@@ -3,10 +3,10 @@ from collections.abc import AsyncIterator
 from datetime import datetime
 from typing import Annotated, Any
 
-from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sqlalchemy import String, cast, func, or_
+from sqlalchemy import func
 from sqlmodel import col, select
 
 from tracelume import audit, evidence, jobs
@@ -261,44 +261,6 @@ async def stream_log(job_id: str, s: SessionDep) -> StreamingResponse:
 
 
 # ---------- artifacts ----------
-class ArtifactPage(BaseModel):
-    total: int
-    items: list[Artifact]
-
-
-@router.get("/cases/{case_id}/artifacts")
-def list_artifacts(
-    case_id: str,
-    s: SessionDep,
-    type: str | None = None,
-    plugin: str | None = None,
-    q: str | None = None,
-    since: datetime | None = None,
-    until: datetime | None = None,
-    limit: Annotated[int, Query(le=1000)] = 100,
-    offset: int = 0,
-) -> ArtifactPage:
-    stmt = select(Artifact).where(Artifact.case_id == case_id)
-    if type:
-        stmt = stmt.where(Artifact.type == type)
-    if plugin:
-        stmt = stmt.where(Artifact.source_plugin == plugin)
-    if since:
-        stmt = stmt.where(col(Artifact.timestamp) >= since)
-    if until:
-        stmt = stmt.where(col(Artifact.timestamp) <= until)
-    if q:
-        like = f"%{q}%"
-        stmt = stmt.where(
-            or_(col(Artifact.title).ilike(like), cast(Artifact.data, String).ilike(like))
-        )
-    total = s.exec(select(func.count()).select_from(stmt.subquery())).one()
-    items = s.exec(
-        stmt.order_by(col(Artifact.timestamp).desc().nulls_last()).offset(offset).limit(limit)
-    ).all()
-    return ArtifactPage(total=total, items=list(items))
-
-
 @router.get("/artifacts/{artifact_id}")
 def get_artifact(artifact_id: str, s: SessionDep) -> Artifact:
     a = s.get(Artifact, artifact_id)

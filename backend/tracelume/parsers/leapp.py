@@ -98,18 +98,18 @@ def parse_ts(value: str) -> datetime | None:
     if not v or v.lower() in {"none", "null", "n/a", "0"}:
         return None
     v = v.removesuffix(" UTC").replace("Z", "+00:00")
+    dt: datetime | None = None
     try:
         dt = datetime.fromisoformat(v)
     except ValueError:
-        dt = None
         for fmt in DATE_FORMATS:
             try:
                 dt = datetime.strptime(v, fmt)
                 break
             except ValueError:
                 continue
-        if dt is None:
-            return None
+    if dt is None:
+        return None
     if dt.year < 1971:
         return None  # epoch-zero placeholders
     return dt.replace(tzinfo=UTC) if dt.tzinfo is None else dt.astimezone(UTC)
