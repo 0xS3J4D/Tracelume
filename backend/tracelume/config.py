@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     import_dir: Path = Path("./data/import")
     plugins_dir: Path = Path(__file__).resolve().parents[2] / "plugins"
     examiner: str = "examiner"
+    # Registry prefix for tool images: "ghcr.io/0xs3j4d" -> ghcr.io/0xs3j4d/tracelume/aleapp
+    image_registry: str = ""
     # Docker volume names, used when the worker runs inside compose.
     evidence_volume: str | None = None
     workspace_volume: str | None = None

@@ -57,8 +57,14 @@ def run_in_docker(
                 read_only=False,
             ),
         ]
+    image = (
+        f"{settings.image_registry.rstrip('/')}/{plugin.image}"
+        if settings.image_registry
+        else plugin.image
+    )
+    on_line(f"[tracelume] image {image}")
     container = client.containers.run(
-        plugin.image,
+        image,
         plugin.build_command(tool_ctx),
         mounts=mounts,
         network_mode="none",

@@ -6,13 +6,14 @@ name: tracelume
 
 x-app: &app
   build: .
-  image: tracelume/app:0.1.0
+  image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/app:0.1.0
   environment: &env
     TRACELUME_DATABASE_URL: postgresql+psycopg://tracelume:tracelume@db:5432/tracelume
     TRACELUME_REDIS_URL: redis://redis:6379/0
     TRACELUME_JOB_QUEUE: rq
     TRACELUME_RUNNER: docker
     TRACELUME_EXAMINER: ${TRACELUME_EXAMINER:-examiner}
+    TRACELUME_IMAGE_REGISTRY: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}
     TRACELUME_EVIDENCE_VOLUME: tracelume_evidence
     TRACELUME_WORKSPACE_VOLUME: tracelume_workspace
   volumes:
@@ -62,60 +63,60 @@ services:
   aleapp:
     profiles: ["tools"]
     build: ./plugins/aleapp
-    image: tracelume/aleapp:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/aleapp:0.1.0
   ileapp:
     profiles: ["tools"]
     build: ./plugins/ileapp
-    image: tracelume/ileapp:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/ileapp:0.1.0
   sleuthkit:
     profiles: ["tools"]
     build: ./plugins/sleuthkit
-    image: tracelume/sleuthkit:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/sleuthkit:0.1.0
   sqlite-recover:
     profiles: ["tools"]
     build: ./plugins/sqlite_recover
-    image: tracelume/sqlite-recover:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/sqlite-recover:0.1.0
   media:
     profiles: ["tools"]
     build: ./plugins/media
-    image: tracelume/media:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/media:0.1.0
   plaso:
     profiles: ["tools"]
     build: ./plugins/plaso
-    image: tracelume/plaso:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/plaso:0.1.0
   volatility3:
     profiles: ["tools"]
     build: ./plugins/volatility3
-    image: tracelume/volatility3:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/volatility3:0.1.0
 
   hayabusa:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: hayabusa/Dockerfile }
-    image: tracelume/hayabusa:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/hayabusa:0.1.0
   chainsaw:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: chainsaw/Dockerfile }
-    image: tracelume/chainsaw:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/chainsaw:0.1.0
   evtx:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: evtx/Dockerfile }
-    image: tracelume/evtx:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/evtx:0.1.0
   regripper:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: regripper/Dockerfile }
-    image: tracelume/regripper:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/regripper:0.1.0
   mftecmd:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: mftecmd/Dockerfile }
-    image: tracelume/mftecmd:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/mftecmd:0.1.0
   yara:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: yara/Dockerfile }
-    image: tracelume/yara:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/yara:0.1.0
   mvt:
     profiles: ["tools"]
     build: { context: ./plugins, dockerfile: mvt/Dockerfile }
-    image: tracelume/mvt:0.1.0
+    image: ${TRACELUME_REGISTRY:-ghcr.io/0xs3j4d}/tracelume/mvt:0.1.0
   # Optional local LLM for the case assistant:  ./tracelume ai
   # Runs on the internal network only; models are downloaded by the launcher, not by this service.
   ollama:

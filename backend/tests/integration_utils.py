@@ -14,6 +14,8 @@ requires_docker = pytest.mark.skipif(
 
 def run_tool(image: str, argv: list[str], evidence: Path, output: Path) -> str:
     """Run like the worker does: no network, read-only evidence, dropped capabilities."""
+    registry = os.environ.get("TRACELUME_REGISTRY", "ghcr.io/0xs3j4d")
+    image = f"{registry}/{image}" if registry else image
     output.mkdir(parents=True, exist_ok=True)
     output.chmod(0o777)
     proc = subprocess.run(
