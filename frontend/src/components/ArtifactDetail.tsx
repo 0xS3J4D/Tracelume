@@ -72,6 +72,15 @@ export default function ArtifactDetail({
         <dt className="text-slate-400">Artifact ID</dt><dd className="break-all font-mono text-slate-500">{artifact.id}</dd>
       </dl>
 
+      {artifact.type === "media" && typeof artifact.data.thumb === "string" && (
+        <img src={`/api/jobs/${artifact.job_id}/thumbs/${artifact.data.thumb}`} alt={artifact.title}
+          className="max-h-72 w-full rounded-md border border-ink-700 bg-ink-950 object-contain" />
+      )}
+      {artifact.type === "media" && !artifact.timestamp && typeof artifact.data.exif_local_time === "string" && (
+        <p className="rounded-md bg-amber-950/50 px-3 py-2 text-xs text-amber-200">
+          Camera time {artifact.data.exif_local_time} has no time zone, so it is not placed on the UTC timeline.
+        </p>
+      )}
       {artifact.source_plugin === "sleuthkit" && artifact.data.kind === "file" && !artifact.data.recovered_file && (
         <button className="btn-primary" onClick={async () => navigate(`/jobs/${(await api.recover(artifact.id)).id}`)}>
           {artifact.data.deleted ? "Recover deleted file content" : "Extract file content"}

@@ -75,6 +75,10 @@ services:
     profiles: ["tools"]
     build: ./plugins/sqlite_recover
     image: tracelume/sqlite-recover:0.1.0
+  media:
+    profiles: ["tools"]
+    build: ./plugins/media
+    image: tracelume/media:0.1.0
   plaso:
     profiles: ["tools"]
     build: ./plugins/plaso

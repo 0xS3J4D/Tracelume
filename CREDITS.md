@@ -15,7 +15,7 @@ and keeps its own licence. Tracelume does not relicense or bundle their source.
 | [Hayabusa](https://github.com/Yamato-Security/hayabusa) | Yamato Security | AGPL-3.0 | Windows event log triage | planned |
 | [Chainsaw](https://github.com/WithSecureLabs/chainsaw) | WithSecure Labs | GPL-3.0 | Event log hunting (Sigma) | planned |
 | [bulk_extractor](https://github.com/simsong/bulk_extractor) | Simson Garfinkel and contributors | MIT / public domain | Feature carving | planned |
-| [ExifTool](https://exiftool.org/) | Phil Harvey | Artistic / GPL (Perl terms) | Media metadata | planned |
+| [ExifTool](https://exiftool.org/) | Phil Harvey | Artistic / GPL (Perl terms) | Media metadata | ✅ |
 | [YARA](https://github.com/VirusTotal/yara) | VirusTotal / Victor M. Alvarez | BSD-3-Clause | Pattern scanning | planned |
 | [MVT](https://github.com/mvt-project/mvt) | Amnesty International Security Lab | MVT License 1.1 | Mobile compromise indicators | planned |
 | [Natural Earth](https://www.naturalearthdata.com/) via world-atlas | Natural Earth / Mike Bostock | Public domain / ISC | Offline basemap | ✅ |

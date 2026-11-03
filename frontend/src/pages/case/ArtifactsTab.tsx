@@ -5,16 +5,17 @@ import ArtifactDetail from "../../components/ArtifactDetail";
 import { ErrorNote } from "../../components/ui";
 import Conversation from "../../components/viewers/Conversation";
 import LocationMap from "../../components/viewers/LocationMap";
+import Gallery from "../../components/viewers/Gallery";
 
 const PAGE = 200;
-type View = "table" | "conversation" | "map";
+type View = "table" | "conversation" | "map" | "gallery";
 
 export default function ArtifactsTab({ caseId, types }: { caseId: string; types: string[] }) {
   const [params, setParams] = useSearchParams();
   const type = params.get("type") ?? "";
   const q = params.get("q") ?? "";
   const tag = params.get("tag") ?? "";
-  const view = (params.get("view") as View) || (type === "message" ? "conversation" : type === "location" ? "map" : "table");
+  const view = (params.get("view") as View) || (type === "message" ? "conversation" : type === "location" ? "map" : type === "media" ? "gallery" : "table");
   const [query, setQuery] = useState(q);
   const [offset, setOffset] = useState(0);
   const [data, setData] = useState<{ total: number; items: Artifact[] }>({ total: 0, items: [] });
@@ -54,7 +55,7 @@ export default function ArtifactsTab({ caseId, types }: { caseId: string; types:
 
   const current = data.items[sel];
   const select = (a: Artifact) => setSel(data.items.findIndex((x) => x.id === a.id));
-  const views: [View, string][] = [["table", "Table"], ["conversation", "Conversation"], ["map", "Map"]];
+  const views: [View, string][] = [["table", "Table"], ["conversation", "Conversation"], ["gallery", "Gallery"], ["map", "Map"]];
 
   return (
     <div className="flex min-h-0 flex-1" onKeyDown={onKey}>
@@ -83,6 +84,7 @@ export default function ArtifactsTab({ caseId, types }: { caseId: string; types:
         </form>
         <ErrorNote error={error} />
         {view === "conversation" && <Conversation items={data.items} selectedId={current?.id} onSelect={select} />}
+        {view === "gallery" && <Gallery items={data.items} selectedId={current?.id} onSelect={select} />}
         {view === "map" && <LocationMap items={data.items} selectedId={current?.id} onSelect={select} />}
         {view === "table" && (
           <>
