@@ -83,3 +83,24 @@ def test_wal_only_records_and_zip_input(tmp_path: Path) -> None:
     assert index[0]["wal_frames"] >= 1
     wal = [r for r in rec if r["source"] == "wal"]
     assert any(r["values"][2] == "only in wal then deleted" for r in wal)
+
+
+def test_recovers_each_of_several_adjacent_deleted_rows(tmp_path: Path) -> None:
+    """Adjacent freed cells merge into one freeblock but each lost its own first 4 bytes."""
+    db = tmp_path / "ev" / "chat.db"
+    db.parent.mkdir()
+    con = sqlite3.connect(db)
+    con.execute("PRAGMA secure_delete=OFF")
+    con.execute("CREATE TABLE m (id INTEGER PRIMARY KEY, who TEXT, body TEXT, ts INTEGER)")
+    rows = [
+        (i, "alex" if i % 2 else "me", f"text {i} " + "x" * i, 1714555200000 + i)
+        for i in range(1, 9)
+    ]
+    con.executemany("INSERT INTO m VALUES (?,?,?,?)", rows)
+    con.commit()
+    con.execute("DELETE FROM m WHERE id BETWEEN 3 AND 6")
+    con.commit()
+    con.close()
+    _, rec = _run(db, tmp_path / "out")
+    got = sorted(tuple(r["values"][1:]) for r in rec)
+    assert got == sorted((who, body, ts) for i, who, body, ts in rows if 3 <= i <= 6)

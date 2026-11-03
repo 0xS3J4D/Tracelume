@@ -206,20 +206,45 @@ def parse_headless(
         return None
 
 
+def _quality(values: list[Any]) -> float:
+    texts = [v for v in values if isinstance(v, str) and v]
+    if not texts:
+        return 0.0
+    chars = sum(len(t) for t in texts)
+    good = sum(ch.isprintable() for t in texts for ch in t)
+    return good / chars
+
+
+def _best_headless(
+    page: bytes, pos: int, end: int, shapes: dict[int, bool]
+) -> tuple[list[Any], int] | None:
+    """Try every table shape; prefer schema-consistent, fully printable reconstructions."""
+    best, best_score = None, -1.0
+    for n, alias_first in shapes.items():
+        for prefix_len in (1, 0) if alias_first else (0, 1):
+            rec = parse_headless(page, pos, end, n - prefix_len, [0] * prefix_len)
+            if not rec or not plausible(rec[0]):
+                continue
+            score = _quality(rec[0]) * 10 + (2 if prefix_len == int(alias_first) else 0)
+            if score > best_score:
+                best, best_score = rec, score
+    return best if best_score >= 9 else None
+
+
 def carve_freeblock(
-    page: bytes, start: int, end: int, widths: set[int]
+    page: bytes, start: int, end: int, shapes: dict[int, bool]
 ) -> Iterator[tuple[int, list[Any]]]:
-    """Recover the cell at the start of a freeblock, then scan the rest normally."""
-    best: tuple[list[Any], int] | None = None
-    for n in sorted(widths, reverse=True):
-        for prefix_len in (0, 1):
-            rec = parse_headless(page, start + 4, end, n - prefix_len, [0] * prefix_len)
-            if rec and plausible(rec[0]) and (best is None or rec[1] > best[1]):
-                best = rec
-    if best:
-        yield start, best[0]
-        start = best[1]
-    yield from carve(page, start, end)
+    """Recover freed cells. Every freed cell had its first 4 bytes overwritten by a freeblock
+    header (adjacent freeblocks are merged later), so reconstruct cell after cell, then scan
+    whatever is left for intact record headers."""
+    pos = start
+    while pos + 4 < end:
+        rec = _best_headless(page, pos + 4, end, shapes)
+        if rec is None:
+            break
+        yield pos, rec[0]
+        pos = rec[1]
+    yield from carve(page, pos, end)
 
 
 def freeblocks(page: bytes, hdr_off: int) -> Iterator[tuple[int, int, bool]]:
@@ -252,10 +277,12 @@ def live_rows(path: Path) -> tuple[dict[str, dict[str, Any]], set[tuple[str, ...
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
         ).fetchall():
             q = name.replace('"', '""')
-            cols = [r[1] for r in con.execute(f'PRAGMA table_info("{q}")')]
+            info = list(con.execute(f'PRAGMA table_info("{q}")'))
+            cols = [r[1] for r in info]
+            alias = bool(info) and info[0][5] == 1 and str(info[0][2]).upper() == "INTEGER"
             # identifiers come from the database's own schema and are quoted
             count = con.execute(f'SELECT count(*) FROM "{q}"').fetchone()[0]  # noqa: S608
-            tables[name] = {"columns": cols, "rows": count}
+            tables[name] = {"columns": cols, "rows": count, "rowid_alias_first": alias}
             for row in con.execute(f'SELECT * FROM "{q}" LIMIT 200000'):  # noqa: S608
                 keys.add(_key(list(row)))
     finally:
@@ -284,7 +311,12 @@ def analyse(db_path: Path, rel: str, out: Any) -> dict[str, Any]:
     db = Db(db_path)
     seen: set[tuple[str, ...]] = set()
     counts = {"wal": 0, "freelist": 0, "freeblock": 0}
-    widths = {len(t["columns"]) for t in tables.values() if t["columns"]}
+    # column count -> does the table start with an INTEGER PRIMARY KEY (stored as NULL)?
+    shapes = {
+        len(t["columns"]): t.get("rowid_alias_first", False)
+        for t in tables.values()
+        if t["columns"]
+    }
 
     def emit(source: str, page: int, offset: int, values: list[Any]) -> None:
         k = _key(values)
@@ -314,7 +346,7 @@ def analyse(db_path: Path, rel: str, out: Any) -> dict[str, Any]:
         pg = db.page(pno)
         hdr = 100 if pno == 1 else 0
         for s, e, is_fb in freeblocks(pg, hdr):
-            found = carve_freeblock(pg, s, e, widths) if is_fb else carve(pg, s, e)
+            found = carve_freeblock(pg, s, e, shapes) if is_fb else carve(pg, s, e)
             for off, vals in found:
                 emit("freeblock", pno, off, vals)
 
