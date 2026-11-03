@@ -1,15 +1,24 @@
 # Tracelume launcher for Windows (PowerShell). Requires Docker Desktop.
 #   powershell -ExecutionPolicy Bypass -File .\tracelume.ps1 start
 param([string]$Command = "start", [string]$Arg = "")
-$ErrorActionPreference = "Stop"
+# Native commands (docker) write progress to stderr; don't turn that into terminating errors.
+$ErrorActionPreference = "Continue"
 Set-Location $PSScriptRoot
 $Port = if ($env:TRACELUME_PORT) { $env:TRACELUME_PORT } else { "8080" }
 $Url = "http://127.0.0.1:$Port"
 New-Item -ItemType Directory -Force import, backups | Out-Null
 if (-not (Test-Path import\synthetic-android.zip)) { Copy-Item demo\synthetic-android.zip import\ -ErrorAction SilentlyContinue }
 
-if (-not (Get-Command docker -ErrorAction SilentlyContinue)) { Write-Error "Install Docker Desktop first: https://www.docker.com/products/docker-desktop/"; exit 1 }
-docker info *> $null; if ($LASTEXITCODE -ne 0) { Write-Error "Docker Desktop is not running. Start it and try again."; exit 1 }
+if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+  Write-Host "Docker is not installed. Install Docker Desktop: https://www.docker.com/products/docker-desktop/" -ForegroundColor Red
+  exit 1
+}
+$null = & docker info 2>&1
+if ($LASTEXITCODE -ne 0) {
+  Write-Host "Docker Desktop is not running." -ForegroundColor Red
+  Write-Host "Open Docker Desktop from the Start menu, wait until it shows 'Engine running', then run this again."
+  exit 1
+}
 
 function Get-Images([string[]]$Extra) {
   docker compose @Extra pull --quiet --ignore-pull-failures
