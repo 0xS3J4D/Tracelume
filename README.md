@@ -26,6 +26,10 @@ timeline** that you can tag, annotate and report on. The audit log is tamper-evi
 - Hash-chained **audit log** of every action (chain of custody), with a built-in verifier
 - Each tool sees **only its own evidence item**, read-only, with **no network**
 
+**Acquisition**
+- **iPhone backup over USB** directly in the app (libimobiledevice; Linux hosts, beta): a standard
+  logical backup of an unlocked, trusted device, hashed and registered as evidence automatically
+
 **Analysis (17 integrations)**
 | Evidence | Tools |
 |---|---|
@@ -48,6 +52,7 @@ timeline** that you can tag, annotate and report on. The audit log is tamper-evi
 **Reporting**
 - PDF/HTML report with evidence hashes, processing steps, tagged findings, notes and the audit log
 - Full **case export** (.zip): report, artifacts (CSV + JSONL), audit log, manifest, `SHA256SUMS`
+- **Backups** from Settings with one click (database, evidence, results, checksum), plus restore from the launcher
 
 | Timeline | SQL workbench | Gallery & map |
 |---|---|---|

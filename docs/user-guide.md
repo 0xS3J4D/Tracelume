@@ -27,6 +27,14 @@ folder next to Tracelume and register it from there through the API
 Tracelume computes SHA-256 and MD5 while storing the file, and marks the stored copy read-only.
 Use **Re-verify** at any time. Hashes are also checked automatically before every analysis.
 
+### iPhone backup over USB (Linux, beta)
+On the Evidence tab, open **Acquire an iPhone backup over USB**, connect and unlock the phone,
+click **Find connected iPhones**, and then **Start backup**. Tap *Trust* on the phone the first
+time. The finished backup is zipped, hashed and registered as *iOS backup* evidence, with the
+device model, iOS version and serial in its notes. If the host runs its own `usbmuxd`, stop it
+first (`sudo systemctl stop usbmuxd`). On Windows and macOS, make the backup with Finder/iTunes or
+Apple Devices instead, zip the folder, and register it.
+
 ## 4. Analyse
 **Run all** starts every analysis that fits the evidence type. **Choose…** lets you pick one
 analysis. YARA asks for your rules. Each analysis is a job with a live log (**Jobs** tab) and
@@ -58,7 +66,9 @@ See [assistant.md](assistant.md). Treat its answers as leads: open every citatio
 Every export is recorded in the audit log together with its SHA-256.
 
 ## 8. Back up and update
-`./tracelume backup` writes a database dump and a data archive with checksums to `backups/`.
+**Settings → Backups → Create backup now** (or `./tracelume backup`) writes one archive with the
+database, evidence and results to the `backups/` folder, with a `.sha256` file next to it.
+Restore it into a fresh installation with `./tracelume restore backups/<file>.tar.gz`.
 `./tracelume update` updates the program. Database migrations run automatically.
 
 ## Keyboard

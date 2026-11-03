@@ -11,5 +11,7 @@
 - Read-only SQL workbench over extracted databases
 - Tags, notes, PDF/HTML reports, full case export with checksums
 - Optional local-first case assistant with tool calls and verified citations
+- iPhone backup over USB (libimobiledevice, Linux, beta), registered as evidence automatically
+- In-app backups with checksums; restore from the launcher
 - Launchers for Linux/macOS/Windows, prebuilt images, backups, automatic database migrations
 - Local-only hardening: host allow-list (DNS rebinding), cross-site write blocking, CSP
