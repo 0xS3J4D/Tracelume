@@ -1,0 +1,3 @@
+{"path": "DCIM/Camera/IMG_0001.jpg", "size": 1000, "sha256": "aa", "kind": "image", "thumb": "aa.jpg", "exif": {"EXIF:DateTimeOriginal": "2024:05:01 11:15:02", "EXIF:OffsetTimeOriginal": "+02:00", "EXIF:Make": "Synthetic", "EXIF:Model": "Cam 1", "Composite:GPSLatitude": 59.9139, "Composite:GPSLongitude": 10.7522}}
+{"path": "DCIM/Camera/IMG_0002.jpg", "size": 900, "sha256": "bb", "kind": "image", "thumb": "bb.jpg", "exif": {"EXIF:DateTimeOriginal": "2024:05:01 11:20:00"}}
+{"path": "DCIM/Camera/VID_0003.mp4", "size": 5000, "sha256": "cc", "kind": "video", "thumb": null, "exif": {"QuickTime:CreateDate": "2024:05:02 07:00:00"}}

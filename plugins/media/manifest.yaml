@@ -1,0 +1,8 @@
+name: media
+image: tracelume/media:0.1.0
+build: plugins/media/Dockerfile
+tool:
+  name: ExifTool
+  version: 13.x (Debian)
+  license: Artistic-1.0 / GPL-1.0+
+  url: https://exiftool.org/
