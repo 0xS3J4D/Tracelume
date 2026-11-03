@@ -1,38 +1,61 @@
 #!/usr/bin/env bash
-# Tracelume launcher: a thin wrapper around docker compose.
+# Tracelume launcher (Linux / macOS). Windows: use tracelume.ps1.
 set -euo pipefail
 cd "$(dirname "$0")"
 PORT="${TRACELUME_PORT:-8080}"
 URL="http://127.0.0.1:${PORT}"
+DC=(docker compose)
 
 need() { command -v "$1" >/dev/null || { echo "Tracelume needs $1. Install Docker Desktop or Docker Engine first." >&2; exit 1; }; }
 need docker
+docker info >/dev/null 2>&1 || { echo "Docker is installed but not running. Start Docker and try again." >&2; exit 1; }
+
+images() {  # pull prebuilt images; build only what is missing (e.g. no network to the registry)
+  "${DC[@]}" "$@" pull --quiet --ignore-pull-failures || true
+  "${DC[@]}" "$@" up --no-start --build=never >/dev/null 2>&1 || "${DC[@]}" "$@" up --no-start
+}
 
 case "${1:-start}" in
   start)
-    docker compose up -d --build
-    echo "Tracelume is running at ${URL} (local only)."
+    images
+    "${DC[@]}" up -d
+    printf 'Waiting for Tracelume'; for _ in $(seq 60); do curl -sf "$URL/api/health" >/dev/null && break; printf '.'; sleep 1; done; echo
+    echo "Tracelume is running at ${URL} (only reachable from this computer)."
     (command -v xdg-open >/dev/null && xdg-open "$URL" >/dev/null 2>&1) || (command -v open >/dev/null && open "$URL") || true ;;
-  stop)   docker compose down ;;
-  status) docker compose ps ;;
-  logs)   docker compose logs -f --tail=100 ;;
-  tools)  docker compose --profile tools build ;;   # build all forensic tool images
-  update) git pull --ff-only && docker compose up -d --build ;;
+  stop)   "${DC[@]}" down ;;
+  status) "${DC[@]}" ps ;;
+  logs)   "${DC[@]}" logs -f --tail=100 ;;
+  tools)  # download (or build) every forensic tool image
+    images --profile tools
+    "${DC[@]}" --profile tools rm -f >/dev/null 2>&1 || true
+    echo "Tool images ready." ;;
+  build)  "${DC[@]}" --profile tools build ;;   # build everything from source
+  update) git pull --ff-only && "$0" tools && "${DC[@]}" up -d ;;
   ai)
     # Download a model ONCE with network access, then serve it offline on the internal network.
     model="${2:-qwen2.5:7b-instruct}"
     echo "Downloading ${model} (one-time, needs internet)…"
     docker run --rm -v tracelume_ollama:/root/.ollama --entrypoint sh ollama/ollama:0.40.13 \
       -c "ollama serve >/dev/null 2>&1 & sleep 3; ollama pull '${model}'"
-    docker compose --profile ai up -d ollama
-    echo "Local model ready. In Tracelume → Settings, set model to: ${model}" ;;
+    "${DC[@]}" --profile ai up -d ollama
+    echo "Local model ready. In Tracelume → Settings, set the model to: ${model}" ;;
   backup)
-    # Consistent backup of the case database + evidence + workspace into ./backups
     mkdir -p backups; stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-    docker compose exec -T db pg_dump -U tracelume -Fc tracelume > "backups/db-${stamp}.dump"
+    "${DC[@]}" exec -T db pg_dump -U tracelume -Fc tracelume > "backups/db-${stamp}.dump"
     docker run --rm -v tracelume_evidence:/e:ro -v tracelume_workspace:/w:ro -v "$PWD/backups:/b" \
       alpine:3.20 tar czf "/b/data-${stamp}.tgz" -C / e w
     (cd backups && sha256sum "db-${stamp}.dump" "data-${stamp}.tgz" > "SHA256SUMS-${stamp}")
-    echo "Backup written to backups/ (with SHA256SUMS-${stamp})" ;;
-  *) echo "usage: ./tracelume [start|stop|status|logs|tools|ai [model]|backup|update]"; exit 2 ;;
+    echo "Backup written to backups/ (verify with: sha256sum -c backups/SHA256SUMS-${stamp})" ;;
+  *) cat <<USAGE
+usage: ./tracelume <command>
+  start            start Tracelume and open it in the browser (default)
+  stop             stop all services (data is kept)
+  status | logs    show service status / follow logs
+  tools            download the forensic tool images (first run, and after updates)
+  ai [model]       download a local AI model once, then run it offline
+  backup           back up the database, evidence and results to ./backups
+  update           update to the latest version
+  build            build every image from source instead of downloading
+USAGE
+     exit 2 ;;
 esac
