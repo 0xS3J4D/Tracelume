@@ -15,6 +15,8 @@ images() {  # pull prebuilt images; build only what is missing (e.g. no network 
   "${DC[@]}" "$@" up --no-start --no-build >/dev/null 2>&1 || "${DC[@]}" "$@" up --no-start
 }
 
+mkdir -p import backups && chmod 0777 backups 2>/dev/null || true
+
 case "${1:-start}" in
   start)
     images
@@ -40,12 +42,20 @@ case "${1:-start}" in
     "${DC[@]}" --profile ai up -d ollama
     echo "Local model ready. In Tracelume → Settings, set the model to: ${model}" ;;
   backup)
-    mkdir -p backups; stamp="$(date -u +%Y%m%dT%H%M%SZ)"
-    "${DC[@]}" exec -T db pg_dump -U tracelume -Fc tracelume > "backups/db-${stamp}.dump"
-    docker run --rm -v tracelume_evidence:/e:ro -v tracelume_workspace:/w:ro -v "$PWD/backups:/b" \
-      alpine:3.20 tar czf "/b/data-${stamp}.tgz" -C / e w
-    (cd backups && sha256sum "db-${stamp}.dump" "data-${stamp}.tgz" > "SHA256SUMS-${stamp}")
-    echo "Backup written to backups/ (verify with: sha256sum -c backups/SHA256SUMS-${stamp})" ;;
+    "${DC[@]}" exec -T api python -m tracelume.backup create
+    echo "Backup written to ./backups (a .sha256 checksum file sits next to it)." ;;
+  restore)
+    file="${2:?usage: ./tracelume restore backups/<file>.tar.gz}"
+    [ -f "$file" ] || { echo "no such file: $file" >&2; exit 1; }
+    echo "This REPLACES all current cases, evidence and results with the backup."
+    read -r -p "Type RESTORE to continue: " ok; [ "$ok" = RESTORE ] || exit 1
+    "${DC[@]}" down
+    docker volume rm tracelume_db tracelume_evidence tracelume_workspace >/dev/null 2>&1 || true
+    "${DC[@]}" up -d db redis
+    cp "$file" backups/ 2>/dev/null || true; [ -f "$file.sha256" ] && cp "$file.sha256" backups/ 2>/dev/null || true
+    "${DC[@]}" run --rm api python -m tracelume.backup restore "/backups/$(basename "$file")"
+    "${DC[@]}" up -d
+    echo "Restore complete." ;;
   *) cat <<USAGE
 usage: ./tracelume <command>
   start            start Tracelume and open it in the browser (default)
@@ -54,6 +64,8 @@ usage: ./tracelume <command>
   tools            download the forensic tool images (first run, and after updates)
   ai [model]       download a local AI model once, then run it offline
   backup           back up the database, evidence and results to ./backups
+                   (also available in the app under Settings → Backups)
+  restore <file>   restore a backup into this installation (replaces current data)
   update           update to the latest version
   build            build every image from source instead of downloading
 USAGE

@@ -17,6 +17,7 @@ os.environ.update(
     TRACELUME_EVIDENCE_DIR=str(tmp / "evidence"),
     TRACELUME_WORKSPACE_DIR=str(tmp / "work"),
     TRACELUME_IMPORT_DIR=str(tmp / "import"),
+    TRACELUME_BACKUPS_DIR=str(tmp / "backups"),
     TRACELUME_PLUGINS_DIR=str(REPO / "plugins"),
     TRACELUME_JOB_QUEUE="inline",
     TRACELUME_RUNNER="fake",

@@ -21,3 +21,5 @@ backend/tracelume/static/
 *.aff4
 import/*
 !import/.gitkeep
+backups/*
+!backups/.gitkeep

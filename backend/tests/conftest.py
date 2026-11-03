@@ -1,3 +1,4 @@
+import io
 import os
 import shutil
 from collections.abc import Iterator
@@ -17,6 +18,7 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
     monkeypatch.setenv("TRACELUME_EVIDENCE_DIR", str(tmp_path / "evidence"))
     monkeypatch.setenv("TRACELUME_WORKSPACE_DIR", str(tmp_path / "work"))
     monkeypatch.setenv("TRACELUME_IMPORT_DIR", str(tmp_path / "import"))
+    monkeypatch.setenv("TRACELUME_BACKUPS_DIR", str(tmp_path / "backups"))
     monkeypatch.setenv("TRACELUME_PLUGINS_DIR", str(REPO / "plugins"))
     monkeypatch.setenv("TRACELUME_JOB_QUEUE", "inline")
     monkeypatch.setenv("TRACELUME_RUNNER", "fake")
@@ -55,3 +57,20 @@ def fake_runner(monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
 
     monkeypatch.setitem(jobs.RUNNERS, "fake", run)
     return calls
+
+
+@pytest.fixture
+def populated(client: TestClient) -> str:
+    case_id = client.post("/api/cases", json={"name": "WS case"}).json()["id"]
+    ev = client.post(
+        f"/api/cases/{case_id}/evidence",
+        files={
+            "file": ("dump.zip", io.BytesIO(b"synthetic android dump - not real evidence\n" * 100))
+        },
+        data={"kind": "android_fs"},
+    ).json()
+    job = client.post(
+        f"/api/cases/{case_id}/jobs", json={"evidence_id": ev["id"], "plugin": "aleapp"}
+    ).json()
+    assert client.get(f"/api/jobs/{job['id']}").json()["status"] == "succeeded"
+    return str(case_id)
