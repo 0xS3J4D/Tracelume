@@ -39,6 +39,7 @@ ignore = ["S101", "S603", "B008"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S"]
+"../plugins/*/tests/*" = ["S"]
 
 [tool.mypy]
 python_version = "3.12"

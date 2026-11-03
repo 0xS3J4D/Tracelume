@@ -63,6 +63,14 @@ services:
     profiles: ["tools"]
     build: ./plugins/aleapp
     image: tracelume/aleapp:0.1.0
+  ileapp:
+    profiles: ["tools"]
+    build: ./plugins/ileapp
+    image: tracelume/ileapp:0.1.0
+  sleuthkit:
+    profiles: ["tools"]
+    build: ./plugins/sleuthkit
+    image: tracelume/sleuthkit:0.1.0
 
 networks:
   backend: { internal: true }   # no route to the internet
