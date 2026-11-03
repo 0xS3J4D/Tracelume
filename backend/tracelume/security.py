@@ -3,7 +3,7 @@
 - Host header allow-list blocks DNS-rebinding attacks (a malicious site resolving its own
   domain to 127.0.0.1 to read the API).
 - State-changing requests must come from Tracelume's own origin: browsers always send an
-  Origin header on cross-site POST/PUT/PATCH/DELETE, so a foreign page cannot use the API (CSRF).
+  Origin header on cross-site POST/PUT/PATCH/DELETE; only local origins may write (CSRF).
 - Conservative security headers on every response.
 """
 
@@ -34,10 +34,8 @@ class LocalOnlyMiddleware(BaseHTTPMiddleware):
             return JSONResponse({"detail": "host not allowed"}, status_code=400)
         if request.method not in SAFE:
             origin = request.headers.get("origin")
-            if (
-                origin
-                and urlparse(origin).netloc.lower() != (request.headers.get("host") or "").lower()
-            ):
+            origin_host = (urlparse(origin).hostname or "").lower() if origin else ""
+            if origin and "*" not in allowed and origin_host not in allowed:
                 return JSONResponse({"detail": "cross-site request blocked"}, status_code=403)
         resp = await call_next(request)
         resp.headers.setdefault("X-Content-Type-Options", "nosniff")
