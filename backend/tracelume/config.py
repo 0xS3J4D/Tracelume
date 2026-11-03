@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     workspace_dir: Path = Path("./data/workspace")
     import_dir: Path = Path("./data/import")
     backups_dir: Path = Path("./data/backups")
+    # Set by the Linux launcher when USB passthrough is available (iPhone acquisition)
+    usb_acquisition: bool = False
     plugins_dir: Path = Path(__file__).resolve().parents[2] / "plugins"
     examiner: str = "examiner"
     # Registry prefix for tool images: "ghcr.io/0xs3j4d" -> ghcr.io/0xs3j4d/tracelume/aleapp

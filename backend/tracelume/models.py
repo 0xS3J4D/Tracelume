@@ -77,7 +77,8 @@ class Evidence(SQLModel, table=True):
 class Job(SQLModel, table=True):
     id: str = Field(default_factory=_uuid, primary_key=True)
     case_id: str = Field(foreign_key="case.id", index=True)
-    evidence_id: str = Field(foreign_key="evidence.id", index=True)
+    # None while an acquisition job has not yet produced its evidence item
+    evidence_id: str | None = Field(default=None, foreign_key="evidence.id", index=True)
     plugin: str
     plugin_version: str
     params: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JsonType))

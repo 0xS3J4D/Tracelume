@@ -56,12 +56,23 @@ class MediaPlugin(Plugin):
         tool_authors="Phil Harvey",
     )
     supported_evidence: ClassVar[frozenset[EvidenceKind]] = frozenset(
-        {EvidenceKind.android_fs, EvidenceKind.ios_fs, EvidenceKind.ios_backup, EvidenceKind.other}
+        {
+            EvidenceKind.android_fs,
+            EvidenceKind.ios_fs,
+            EvidenceKind.ios_backup,
+            EvidenceKind.other,
+        }
     )
     image: ClassVar[str] = "tracelume/media:0.1.0"
 
     def build_command(self, ctx: RunContext) -> list[str]:
-        return ["python", "-I", "/opt/media_scan.py", str(ctx.evidence_path), str(ctx.output_dir)]
+        return [
+            "python",
+            "-I",
+            "/opt/media_scan.py",
+            str(ctx.evidence_path),
+            str(ctx.output_dir),
+        ]
 
     def parse_output(self, ctx: RunContext) -> Iterable[ArtifactIn]:
         path = ctx.output_dir / "media.jsonl"
@@ -83,7 +94,10 @@ class MediaPlugin(Plugin):
                     "exif_local_time": ex.get("EXIF:DateTimeOriginal"),
                     "exif": ex,
                 }
-                lat, lon = ex.get("Composite:GPSLatitude"), ex.get("Composite:GPSLongitude")
+                lat, lon = (
+                    ex.get("Composite:GPSLatitude"),
+                    ex.get("Composite:GPSLongitude"),
+                )
                 if isinstance(lat, int | float) and isinstance(lon, int | float):
                     data["Latitude"], data["Longitude"] = lat, lon
                 yield ArtifactIn(

@@ -8,7 +8,24 @@ DC=(docker compose)
 
 need() { command -v "$1" >/dev/null || { echo "Tracelume needs $1. Install Docker Desktop or Docker Engine first." >&2; exit 1; }; }
 need docker
-docker info >/dev/null 2>&1 || { echo "Docker is installed but not running. Start Docker and try again." >&2; exit 1; }
+if ! docker info >/dev/null 2>&1; then
+  if [ "$(uname -s)" = Linux ] && [ -S /var/run/docker.sock ] && ! [ -w /var/run/docker.sock ]; then
+    echo "Your user may not use Docker. Run:  sudo usermod -aG docker \$USER  then log out and in again." >&2
+  else
+    echo "Docker is installed but not running. Start Docker and try again." >&2
+  fi
+  exit 1
+fi
+docker compose version >/dev/null 2>&1 || { echo "Docker Compose v2 is missing (package: docker-compose-plugin)." >&2; exit 1; }
+
+# iPhone backup over USB is available on Linux hosts with a USB bus
+if [ "$(uname -s)" = Linux ] && [ -d /dev/bus/usb ]; then
+  export TRACELUME_USB_ACQUISITION=1
+  if command -v systemctl >/dev/null && systemctl is-active --quiet usbmuxd 2>/dev/null; then
+    echo "Note: the host's usbmuxd service is running and may hold connected iPhones."
+    echo "      For iPhone backups in Tracelume run:  sudo systemctl stop usbmuxd"
+  fi
+fi
 
 images() {  # pull prebuilt images; build only what is missing (e.g. no network to the registry)
   "${DC[@]}" "$@" pull --quiet --ignore-pull-failures || true

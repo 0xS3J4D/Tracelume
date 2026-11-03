@@ -431,7 +431,10 @@ def main() -> None:
                 info["file"] = dest.name
                 index.append(info)
                 rc = info.get("recovered", {})
-                print(f"  {rel}: {len(info.get('tables', {}))} tables, recovered {rc}", flush=True)
+                print(
+                    f"  {rel}: {len(info.get('tables', {}))} tables, recovered {rc}",
+                    flush=True,
+                )
     (out / "index.json").write_text(json.dumps(index, indent=1), encoding="utf-8")
     for p in dbs_dir.iterdir():
         os.chmod(p, 0o444)

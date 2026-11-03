@@ -32,7 +32,13 @@ class MyToolPlugin(Plugin):
     def build_command(self, ctx: RunContext) -> list[str]:
         # Runs inside the tool image with --network none.
         # ctx.evidence_path is read-only; write ONLY to ctx.output_dir.
-        return ["mytool", "--json", "-o", f"{ctx.output_dir}/out.jsonl", str(ctx.evidence_path)]
+        return [
+            "mytool",
+            "--json",
+            "-o",
+            f"{ctx.output_dir}/out.jsonl",
+            str(ctx.evidence_path),
+        ]
 
     def parse_output(self, ctx: RunContext) -> Iterable[ArtifactIn]:
         out = ctx.output_dir / "out.jsonl"

@@ -21,7 +21,10 @@ if check.returncode != 0:
     sys.exit(2)
 src = Path(
     subprocess.run(
-        ["python", "/opt/stage.py", ev, str(out)], capture_output=True, text=True, check=True
+        ["python", "/opt/stage.py", ev, str(out)],
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout.strip()
 )
 r = subprocess.run(

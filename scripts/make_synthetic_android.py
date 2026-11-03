@@ -102,7 +102,19 @@ def build(out: Path) -> Path:
         for i, (addr, ms, typ, body) in enumerate(MESSAGES, 1):
             con.execute(
                 "INSERT INTO sms VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                (i, 1 if addr.endswith("100") else 2, addr, None, ms, ms, 1, typ, body, None, 0),
+                (
+                    i,
+                    1 if addr.endswith("100") else 2,
+                    addr,
+                    None,
+                    ms,
+                    ms,
+                    1,
+                    typ,
+                    body,
+                    None,
+                    0,
+                ),
             )
         con.commit()
         con.close()
