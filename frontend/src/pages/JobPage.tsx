@@ -29,7 +29,14 @@ export default function JobPage() {
     <>
       <PageHeader title={<>Job · {job.plugin} <StatusBadge status={job.status} /></>}
         sub={<>Started {fmtUtc(job.started_at)} · finished {fmtUtc(job.finished_at)} · {job.artifact_count} artifacts</>}
-        actions={<Link className="btn-ghost" to={`/cases/${job.case_id}/artifacts`}>View artifacts →</Link>} />
+        actions={
+          <div className="flex gap-2">
+            {(job.status === "queued" || job.status === "running") && (
+              <button className="btn-ghost text-red-300" onClick={async () => setJob(await api.cancelJob(job.id))}>Cancel job</button>
+            )}
+            <Link className="btn-ghost" to={`/cases/${job.case_id}/artifacts`}>View artifacts →</Link>
+          </div>
+        } />
       {job.error && <p role="alert" className="mx-6 mt-4 rounded-md bg-red-950 px-3 py-2 text-sm text-red-200">{job.error}</p>}
       <div className="flex items-center gap-2 px-6 pt-4 text-xs text-slate-400">
         <input id="follow" type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} />

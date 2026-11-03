@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlmodel import col, select
@@ -281,3 +281,84 @@ def case_audit(case_id: str, s: SessionDep) -> list[AuditLog]:
 def verify_audit(s: SessionDep) -> dict[str, Any]:
     ok, broken = audit.verify_chain(s)
     return {"ok": ok, "first_broken_id": broken}
+
+
+@router.post("/jobs/{job_id}/cancel")
+def cancel_job(job_id: str, s: SessionDep, actor: ActorDep) -> Job:
+    job = s.get(Job, job_id)
+    if job is None:
+        raise HTTPException(404, "job not found")
+    if job.status == JobStatus.queued:
+        job.status, job.error = JobStatus.cancelled, "cancelled by examiner"
+    elif job.status == JobStatus.running:
+        job.error = jobs.CANCEL_MARK  # picked up by the worker within seconds
+    else:
+        raise HTTPException(409, f"job is already {job.status}")
+    s.add(job)
+    audit.record(
+        s,
+        actor,
+        "job.cancel",
+        case_id=job.case_id,
+        object_type="job",
+        object_id=job.id,
+        commit=False,
+    )
+    s.commit()
+    s.refresh(job)
+    return job
+
+
+@router.get("/jobs/{job_id}/files/{path:path}")
+def job_file(job_id: str, path: str, s: SessionDep, actor: ActorDep) -> FileResponse:
+    """Download a file produced by a job (e.g. recovered file content). Audit-logged."""
+    import hashlib
+
+    job = s.get(Job, job_id)
+    if job is None:
+        raise HTTPException(404, "job not found")
+    base = (jobs.job_dir(job_id) / "output").resolve()
+    target = (base / path).resolve()
+    if not target.is_relative_to(base) or not target.is_file():
+        raise HTTPException(404, "file not found")
+    digest = hashlib.sha256(target.read_bytes()).hexdigest()
+    audit.record(
+        s,
+        actor,
+        "file.export",
+        case_id=job.case_id,
+        object_type="job",
+        object_id=job_id,
+        hash_after=digest,
+        details={"path": path},
+    )
+    return FileResponse(
+        target,
+        filename=target.name,
+        media_type="application/octet-stream",
+        headers={"X-Content-SHA256": digest},
+    )
+
+
+@router.post("/artifacts/{artifact_id}/recover", status_code=201)
+def recover_file(artifact_id: str, s: SessionDep, actor: ActorDep) -> Job:
+    """Recover a file's content from a disk image (Sleuth Kit icat), incl. deleted files."""
+    a = s.get(Artifact, artifact_id)
+    if a is None or a.source_plugin != "sleuthkit" or a.type != "file_entry":
+        raise HTTPException(400, "only Sleuth Kit file entries can be recovered")
+    d = a.data
+    if d.get("kind") != "file" or "inode" not in d:
+        raise HTTPException(400, "not a regular file")
+    offset = str(d.get("volume", "vol_0")).removeprefix("vol_")
+    params = {
+        "mode": "extract",
+        "inode": d["inode"],
+        "offset": offset,
+        "name": str(d.get("path", "file")).rsplit("/", 1)[-1] or "file",
+        "path": d.get("path"),
+        "deleted": d.get("deleted", False),
+        "artifact_id": a.id,
+    }
+    return create_job(
+        a.case_id, JobIn(evidence_id=a.evidence_id, plugin="sleuthkit", params=params), s, actor
+    )

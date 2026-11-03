@@ -1,15 +1,48 @@
-"""Runs inside the Sleuth Kit image. Finds partitions with mmls, then lists every file
-(allocated and deleted) per file system with `fls -r -p -m`, writing one bodyfile per volume.
+"""Runs inside the Sleuth Kit image.
 
-Usage: tsk_run.py <image> <output_dir>
+List mode (default): find partitions with mmls, then list every file (allocated and deleted)
+per file system with `fls -r -p -m`, writing one bodyfile per volume.
+    tsk_run.py <image> <output_dir>
+Extract mode: recover one file's content by inode with icat (works for deleted files whose
+data blocks have not been reused).
+    tsk_run.py <image> <output_dir> extract <offset> <inode> <name>
 """
 
+import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
 
 image, out = sys.argv[1], Path(sys.argv[2])
 out.mkdir(parents=True, exist_ok=True)
+
+if len(sys.argv) > 3 and sys.argv[3] == "extract":
+    offset, inode, name = sys.argv[4], sys.argv[5], Path(sys.argv[6]).name or "recovered.bin"
+    dest = out / "recovered"
+    dest.mkdir(exist_ok=True)
+    target = dest / name
+    print(f"$ icat -r -o {offset} {image} {inode}", flush=True)
+    with target.open("wb") as f:
+        r = subprocess.run(
+            ["icat", "-r", "-o", offset, image, inode],
+            stdout=f,  # noqa: S607
+            stderr=subprocess.PIPE,
+        )
+    data = target.read_bytes()
+    meta = {
+        "name": name,
+        "inode": inode,
+        "offset": offset,
+        "size": len(data),
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "md5": hashlib.md5(data).hexdigest(),  # noqa: S324
+        "icat_exit": r.returncode,
+        "stderr": r.stderr.decode(errors="replace")[-500:],
+    }
+    (dest / "recovered.json").write_text(json.dumps(meta), encoding="utf-8")
+    print(f"recovered {len(data)} bytes, sha256 {meta['sha256']}", flush=True)
+    sys.exit(0 if len(data) or r.returncode == 0 else 1)
 
 
 def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
