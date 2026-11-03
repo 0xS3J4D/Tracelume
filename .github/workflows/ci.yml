@@ -50,3 +50,19 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: docker build -t tracelume/app:ci .
+      - name: App image boots and serves the UI
+        run: |
+          docker run -d --name app -p 8000:8000 tracelume/app:ci
+          for i in $(seq 30); do curl -sf localhost:8000/api/health && break; sleep 1; done
+          curl -sf localhost:8000/ | grep -q '<div id="root">'
+
+  tools:
+    # Builds every forensic tool image and runs it on synthetic evidence.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: sudo apt-get update && sudo apt-get install -y dosfstools mtools
+      - run: docker compose --profile tools build
+      - run: cd backend && uv venv -p 3.12 && uv pip install -e '.[dev]'
+      - run: cd backend && TRACELUME_INTEGRATION=1 .venv/bin/pytest -q ../plugins -k integration -rs

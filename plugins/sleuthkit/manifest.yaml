@@ -1,0 +1,8 @@
+name: sleuthkit
+image: tracelume/sleuthkit:0.1.0
+build: plugins/sleuthkit/Dockerfile
+tool:
+  name: The Sleuth Kit
+  version: "4.12 (Debian trixie)"
+  license: IPL-1.0 / CPL-1.0 / GPL-2.0+
+  url: https://www.sleuthkit.org/sleuthkit/
