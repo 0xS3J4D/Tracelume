@@ -26,7 +26,7 @@ def run_tool(image: str, argv: list[str], evidence: Path, output: Path) -> str:
         ["docker", "run", "--rm", "--network", "none", "--cap-drop", "ALL",
          "--security-opt", "no-new-privileges",
          "-v", f"{evidence.parent}:/evidence:ro", "-v", f"{output}:/output", image, *argv],
-        capture_output=True, text=True, check=False,
+        capture_output=True, text=True, check=False, timeout=1200,
     )  # fmt: skip
     assert proc.returncode == 0, proc.stdout + proc.stderr
     return proc.stdout
