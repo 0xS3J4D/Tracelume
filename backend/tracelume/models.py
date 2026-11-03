@@ -130,3 +130,30 @@ class AuditLog(SQLModel, table=True):
     hash_after: str | None = None
     prev_entry_hash: str
     entry_hash: str
+
+
+class Tag(SQLModel, table=True):
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    case_id: str = Field(foreign_key="case.id", index=True)
+    name: str
+    color: str = "#f59e0b"
+
+
+class ArtifactTag(SQLModel, table=True):
+    artifact_id: str = Field(foreign_key="artifact.id", primary_key=True)
+    tag_id: str = Field(foreign_key="tag.id", primary_key=True)
+    tagged_by: str
+    tagged_at: datetime = Field(
+        default_factory=utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
+
+
+class Note(SQLModel, table=True):
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    case_id: str = Field(foreign_key="case.id", index=True)
+    artifact_id: str | None = Field(default=None, foreign_key="artifact.id", index=True)
+    author: str
+    body: str
+    created_at: datetime = Field(
+        default_factory=utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
+    )
