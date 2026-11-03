@@ -1,6 +1,20 @@
 version: 2
+# Monthly, grouped, minor/patch only. Major upgrades are done deliberately by a maintainer.
 updates:
-  - { package-ecosystem: pip, directory: /backend, schedule: { interval: weekly } }
-  - { package-ecosystem: npm, directory: /frontend, schedule: { interval: weekly } }
-  - { package-ecosystem: github-actions, directory: /, schedule: { interval: weekly } }
-  - { package-ecosystem: docker, directory: /, schedule: { interval: weekly } }
+  - package-ecosystem: pip
+    directory: /backend
+    schedule: { interval: monthly }
+    groups: { python: { patterns: ["*"], update-types: [minor, patch] } }
+    ignore: [{ dependency-name: "*", update-types: ["version-update:semver-major"] }]
+    open-pull-requests-limit: 2
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: monthly }
+    groups: { frontend: { patterns: ["*"], update-types: [minor, patch] } }
+    ignore: [{ dependency-name: "*", update-types: ["version-update:semver-major"] }]
+    open-pull-requests-limit: 2
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    groups: { actions: { patterns: ["*"] } }
+    open-pull-requests-limit: 2
