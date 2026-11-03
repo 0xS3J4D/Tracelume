@@ -1,6 +1,7 @@
 name: CI
 on: [push, pull_request]
 permissions: { contents: read }
+concurrency: { group: ci-${{ github.ref }}, cancel-in-progress: true }
 
 jobs:
   backend:
@@ -57,14 +58,3 @@ jobs:
           curl -sf localhost:8000/api/health || { docker logs app; exit 1; }
           curl -sf localhost:8000/ | grep -q '<div id="root">'
           docker exec app python -c "import weasyprint; assert weasyprint.HTML(string='<p>x</p>').write_pdf()[:4] == b'%PDF'"
-
-  tools:
-    # Builds every forensic tool image and runs it on synthetic evidence.
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
-      - run: sudo apt-get update && sudo apt-get install -y dosfstools mtools
-      - run: docker compose --profile tools build
-      - run: cd backend && uv venv -p 3.12 && uv pip install -e '.[dev]' pillow
-      - run: cd backend && TRACELUME_INTEGRATION=1 .venv/bin/pytest -q ../plugins tests -k integration -rs

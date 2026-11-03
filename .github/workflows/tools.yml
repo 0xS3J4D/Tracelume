@@ -1,0 +1,21 @@
+name: Tool images
+# Builds every forensic tool image and runs it on synthetic / public sample evidence.
+on:
+  push:
+    branches: [main]
+    paths: ["plugins/**", "docker-compose.yml", ".github/workflows/tools.yml"]
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency: { group: tools-${{ github.ref }}, cancel-in-progress: true }
+
+jobs:
+  tools:
+    # Builds every forensic tool image and runs it on synthetic evidence.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: sudo apt-get update && sudo apt-get install -y dosfstools mtools
+      - run: docker compose --profile tools build
+      - run: cd backend && uv venv -p 3.12 && uv pip install -e '.[dev]' pillow
+      - run: cd backend && TRACELUME_INTEGRATION=1 .venv/bin/pytest -q ../plugins tests -k integration -rs
