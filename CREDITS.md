@@ -26,6 +26,7 @@ Hayabusa/Chainsaw rule sets and MVT's public indicators are bundled at image bui
 runs offline. Licences are checked again whenever a plugin is added. Some licences (for example MVT's)
 put conditions on use, and the plugin docs must state them.
 
+| [libimobiledevice](https://libimobiledevice.org/) + usbmuxd | libimobiledevice contributors | LGPL-2.1 / GPL-2.0 | iPhone backup over USB (Linux) | ✅ beta |
 | Tracelume SQLite carver | Tracelume contributors | GPL-3.0-or-later | Deleted SQLite records | ✅ |
 
 ## Libraries and data
