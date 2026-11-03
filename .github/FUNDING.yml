@@ -1,0 +1,4 @@
+# Shows the "Sponsor" button on GitHub. Fill in once the accounts exist.
+# github: [your-github-username]
+# open_collective: tracelume
+custom: ["https://github.com/OWNER/tracelume/blob/main/DONATE.md"]

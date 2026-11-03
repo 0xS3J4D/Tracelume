@@ -1,3 +1,4 @@
+import os
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -9,7 +10,8 @@ REPO = Path(__file__).resolve().parents[2]
 
 @pytest.fixture
 def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
-    monkeypatch.setenv("TRACELUME_DATABASE_URL", f"sqlite:///{tmp_path}/t.db")
+    db_url = os.environ.get("TRACELUME_TEST_DATABASE_URL") or f"sqlite:///{tmp_path}/t.db"
+    monkeypatch.setenv("TRACELUME_DATABASE_URL", db_url)
     monkeypatch.setenv("TRACELUME_EVIDENCE_DIR", str(tmp_path / "evidence"))
     monkeypatch.setenv("TRACELUME_WORKSPACE_DIR", str(tmp_path / "work"))
     monkeypatch.setenv("TRACELUME_IMPORT_DIR", str(tmp_path / "import"))
@@ -27,6 +29,9 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
 
     with TestClient(create_app()) as c:
         yield c
+    from sqlmodel import SQLModel
+
+    SQLModel.metadata.drop_all(get_engine())
     get_engine().dispose()
     get_settings.cache_clear()
     get_engine.cache_clear()
