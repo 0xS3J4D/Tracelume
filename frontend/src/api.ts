@@ -79,6 +79,16 @@ function qs(params: ArtifactQuery | Record<string, unknown>): string {
   return p.toString();
 }
 
+export interface DbInfo {
+  id: string; path: string; sha256: string; size: number;
+  tables: Record<string, number | null>; recovered: Record<string, number>;
+}
+export interface DbTable {
+  name: string; type: string; sql: string | null; rows: number | null;
+  columns: { name: string; type: string; pk: boolean }[];
+}
+export interface QueryResult { columns: string[]; rows: unknown[][]; truncated: boolean; elapsed_ms: number }
+
 export const api = {
   cases: () => req<Case[]>("/cases"),
   createCase: (b: { name: string; number?: string; description?: string }) =>
@@ -105,6 +115,11 @@ export const api = {
     fetch(`/api/artifacts/${id}/tags/${tagId}`, { method: "PUT" }),
   untagArtifact: (id: string, tagId: string) =>
     fetch(`/api/artifacts/${id}/tags/${tagId}`, { method: "DELETE" }),
+  databases: (caseId: string) => req<DbInfo[]>(`/cases/${caseId}/databases`),
+  dbSchema: (caseId: string, dbId: string) =>
+    req<DbTable[]>(`/cases/${caseId}/databases/${encodeURIComponent(dbId)}/schema`),
+  dbQuery: (caseId: string, dbId: string, sql: string) =>
+    req<QueryResult>(`/cases/${caseId}/databases/${encodeURIComponent(dbId)}/query`, json("POST", { sql })),
   notes: (caseId: string, artifactId?: string) =>
     req<Note[]>(`/cases/${caseId}/notes?${qs({ artifact_id: artifactId })}`),
   createNote: (caseId: string, body: string, artifactId?: string) =>
