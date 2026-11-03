@@ -22,7 +22,7 @@ export default function CasePage() {
   const [error, setError] = useState<string | null>(null);
   const refresh = useCallback(
     () => api.caseSummary(caseId).then(setSummary).catch((e) => setError(e.message)), [caseId]);
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh, tab]); // counts change while jobs run
 
   if (error) return <div className="p-6"><ErrorNote error={error} /></div>;
   if (!summary) return <div className="p-6 text-sm text-slate-400">Loading…</div>;

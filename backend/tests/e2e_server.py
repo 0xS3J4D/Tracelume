@@ -51,7 +51,8 @@ def fake(plugin, settings, ev_rel, out_rel, ctx, on_line, *_):  # type: ignore[n
         for line in (r.stdout + r.stderr).splitlines():
             on_line(line)
         return r.returncode
-    shutil.copytree(FIXTURE, out, dirs_exist_ok=True)
+    if plugin.meta.name == "aleapp":
+        shutil.copytree(FIXTURE, out, dirs_exist_ok=True)
     return 0
 
 
