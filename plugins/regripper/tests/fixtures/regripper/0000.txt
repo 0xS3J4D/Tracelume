@@ -1,0 +1,15 @@
+#HIVE C/Windows/System32/config/SYSTEM
+compname v.20090727
+(System) Gets ComputerName and Hostname values from System hive
+
+ComputerName    = WS-01
+TCP/IP Hostname = ws-01
+----------------------------------------
+timezone v.20200518
+(System) Get TimeZoneInformation value contents
+
+TimeZoneInformation key
+ControlSet001\Control\TimeZoneInformation
+LastWrite Time 2024-05-01 09:15:02Z
+  TimeZoneKeyName->W. Europe Standard Time
+----------------------------------------

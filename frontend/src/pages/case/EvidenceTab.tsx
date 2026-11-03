@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   api, EVIDENCE_KINDS, fmtBytes, fmtUtc, uploadEvidence, type Evidence, type EvidenceKind, type PluginInfo,
 } from "../../api";
+import RunMenu from "../../components/RunMenu";
 import { ErrorNote, VerifyBadge } from "../../components/ui";
 
 export default function EvidenceTab({ caseId, onChange }: { caseId: string; onChange: () => void }) {
@@ -34,9 +35,15 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
     } catch (err) { setError((err as Error).message); } finally { setProgress(null); }
   };
 
-  const run = async (ev: Evidence, plugin: string) => {
-    try { const job = await api.createJob(caseId, ev.id, plugin); navigate(`/jobs/${job.id}`); }
+  const run = async (ev: Evidence, plugin: string, params?: Record<string, string>) => {
+    try { const job = await api.createJob(caseId, ev.id, plugin, params); navigate(`/jobs/${job.id}`); }
     catch (err) { setError((err as Error).message); }
+  };
+  const runAll = async (ev: Evidence, names: string[]) => {
+    try {
+      for (const n of names) await api.createJob(caseId, ev.id, n);
+      navigate(`/cases/${caseId}/jobs`);
+    } catch (err) { setError((err as Error).message); }
   };
   const verify = async (ev: Evidence) => { await api.verify(ev.id); load(); };
 
@@ -88,7 +95,6 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
       <ErrorNote error={error} />
       <ul className="space-y-3">
         {items.map((ev) => {
-          const usable = plugins.filter((p) => p.supported_evidence.includes(ev.kind));
           return (
             <li key={ev.id} className="card p-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -100,9 +106,8 @@ export default function EvidenceTab({ caseId, onChange }: { caseId: string; onCh
                 <div className="flex items-center gap-2">
                   <VerifyBadge status={ev.verify_status} />
                   <button className="btn-ghost" onClick={() => verify(ev)}>Re-verify</button>
-                  {usable.map((p) => (
-                    <button key={p.name} className="btn-primary" onClick={() => run(ev, p.name)}>Run {p.tool_name}</button>
-                  ))}
+                  <RunMenu ev={ev} plugins={plugins} onRun={(name, params) => run(ev, name, params)}
+                    onRunAll={(names) => runAll(ev, names)} />
                 </div>
               </div>
               <p className="hash mt-2">SHA-256 {ev.sha256}</p>

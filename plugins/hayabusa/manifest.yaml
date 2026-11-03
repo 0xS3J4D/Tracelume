@@ -1,0 +1,4 @@
+name: hayabusa
+image: tracelume/hayabusa:0.1.0
+build: plugins/hayabusa/Dockerfile
+tool: {name: Hayabusa, version: v4.3.1, license: AGPL-3.0, url: https://github.com/Yamato-Security/hayabusa}

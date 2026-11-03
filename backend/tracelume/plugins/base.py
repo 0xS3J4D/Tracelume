@@ -87,6 +87,8 @@ class Plugin(ABC):
     meta: ClassVar[PluginMeta]
     supported_evidence: ClassVar[frozenset[EvidenceKind]]
     image: ClassVar[str]  # docker image tag built from plugins/<name>/Dockerfile
+    # Optional job parameters the UI asks for: {name: {type: text|string, label, required}}
+    params_schema: ClassVar[dict[str, Any]] = {}
 
     @abstractmethod
     def build_command(self, ctx: RunContext) -> list[str]:

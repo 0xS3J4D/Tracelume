@@ -182,6 +182,9 @@ def create_job(case_id: str, body: JobIn, s: SessionDep, actor: ActorDep) -> Job
         raise HTTPException(400, str(e)) from e
     if ev.kind not in plugin.supported_evidence:
         raise HTTPException(400, f"{plugin.meta.name} does not support {ev.kind}")
+    for key, spec in plugin.params_schema.items():
+        if spec.get("required") and not str(body.params.get(key, "")).strip():
+            raise HTTPException(422, f"parameter '{key}' is required")
     job = Job(
         case_id=case_id,
         evidence_id=ev.id,

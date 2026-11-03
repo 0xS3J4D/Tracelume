@@ -1,0 +1,1 @@
+{"group":"Login Attacks","kind":"individual","document":{"kind":"evtx","path":"Security.evtx","data":{"Event":{"System":{"Computer":"WS-01","Channel":"Security","EventID":4625}}}},"name":"Account Brute Force","timestamp":"2024-05-01T09:15:02.000000Z","authors":["FranticTyping"],"level":"medium","source":"chainsaw"}

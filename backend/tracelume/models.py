@@ -26,6 +26,7 @@ class EvidenceKind(StrEnum):
     ios_backup = "ios_backup"
     ios_fs = "ios_fs"
     memory_image = "memory_image"
+    windows_triage = "windows_triage"
     logs = "logs"
     other = "other"
 

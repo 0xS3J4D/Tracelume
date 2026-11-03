@@ -1,0 +1,4 @@
+name: regripper
+image: tracelume/regripper:0.1.0
+build: plugins/regripper/Dockerfile
+tool: {name: RegRipper, version: "3.0 (Debian)", license: MIT, url: https://github.com/keydet89/RegRipper3.0}
