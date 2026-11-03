@@ -89,6 +89,17 @@ export interface DbTable {
 }
 export interface QueryResult { columns: string[]; rows: unknown[][]; truncated: boolean; elapsed_ms: number }
 
+export interface AssistantStep { tool: string; args: Record<string, unknown>; result: unknown }
+export interface AssistantMessage {
+  id: string; role: "user" | "assistant"; content: string; steps: AssistantStep[];
+  citations: string[]; model: string | null; author: string; created_at: string;
+}
+export interface AssistantPolicy { allow_remote: boolean; endpoint_local: boolean; model: string; enabled: boolean }
+export interface Settings {
+  assistant: { enabled: boolean; base_url: string; model: string; api_key: string; temperature: number; local: boolean };
+  examiner: { name: string };
+}
+
 export const api = {
   cases: () => req<Case[]>("/cases"),
   createCase: (b: { name: string; number?: string; description?: string }) =>
@@ -120,6 +131,16 @@ export const api = {
     req<DbTable[]>(`/cases/${caseId}/databases/${encodeURIComponent(dbId)}/schema`),
   dbQuery: (caseId: string, dbId: string, sql: string) =>
     req<QueryResult>(`/cases/${caseId}/databases/${encodeURIComponent(dbId)}/query`, json("POST", { sql })),
+  settings: () => req<Settings>("/settings"),
+  saveAssistant: (b: Partial<Settings["assistant"]>) => req<Settings["assistant"]>("/settings/assistant", json("PUT", b)),
+  saveExaminer: (name: string) => req<{ name: string }>("/settings/examiner", json("PUT", { name })),
+  testAssistant: () => req<{ ok: boolean; reply?: string; error?: string }>("/settings/assistant/test", { method: "POST" }),
+  policy: (caseId: string) => req<AssistantPolicy>(`/cases/${caseId}/assistant/policy`),
+  setPolicy: (caseId: string, allow_remote: boolean) =>
+    req<AssistantPolicy>(`/cases/${caseId}/assistant/policy`, json("PUT", { allow_remote })),
+  assistantMessages: (caseId: string) => req<AssistantMessage[]>(`/cases/${caseId}/assistant/messages`),
+  ask: (caseId: string, question: string) =>
+    req<AssistantMessage>(`/cases/${caseId}/assistant`, json("POST", { question })),
   notes: (caseId: string, artifactId?: string) =>
     req<Note[]>(`/cases/${caseId}/notes?${qs({ artifact_id: artifactId })}`),
   createNote: (caseId: string, body: string, artifactId?: string) =>

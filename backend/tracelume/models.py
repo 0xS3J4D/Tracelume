@@ -157,3 +157,24 @@ class Note(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
     )
+
+
+class Setting(SQLModel, table=True):
+    """Workstation-level settings (key/value JSON)."""
+
+    key: str = Field(primary_key=True)
+    value: dict[str, Any] = Field(default_factory=dict, sa_column=Column(JsonType))
+
+
+class AssistantMessage(SQLModel, table=True):
+    id: str = Field(default_factory=_uuid, primary_key=True)
+    case_id: str = Field(foreign_key="case.id", index=True)
+    role: str  # user | assistant
+    content: str
+    steps: list[dict[str, Any]] = Field(default_factory=list, sa_column=Column(JsonType))
+    citations: list[str] = Field(default_factory=list, sa_column=Column(JsonType))
+    model: str | None = None
+    author: str
+    created_at: datetime = Field(
+        default_factory=utcnow, sa_column=Column(DateTime(timezone=True), nullable=False)
+    )

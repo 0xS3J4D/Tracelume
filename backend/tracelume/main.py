@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from tracelume import __version__
-from tracelume.api import workspace
+from tracelume.api import assistant_api, workspace
 from tracelume.api.routes import router
 from tracelume.config import get_settings
 from tracelume.db import init_db
@@ -26,6 +26,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="Tracelume", version=__version__, lifespan=lifespan)
     app.include_router(router)
     app.include_router(workspace.router)
+    app.include_router(assistant_api.router)
 
     @app.get("/api/health")
     def health() -> dict[str, str]:

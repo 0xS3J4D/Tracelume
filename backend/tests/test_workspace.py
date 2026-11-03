@@ -3,7 +3,7 @@ import io
 import pytest
 from fastapi.testclient import TestClient
 
-from tests.test_core import PAYLOAD, fake_runner  # noqa: F401  (fixture re-export)
+from tests.test_core import PAYLOAD
 
 
 @pytest.fixture

@@ -40,6 +40,12 @@ export default function Layout() {
               Cases
             </NavLink>
           </li>
+          <li>
+            <NavLink to="/settings" className={({ isActive }) =>
+              `block rounded-md px-3 py-2 ${isActive ? "bg-ink-800 text-accent" : "text-slate-300 hover:bg-ink-800"}`}>
+              Settings
+            </NavLink>
+          </li>
         </ul>
         <button onClick={() => setHelp(true)} className="mx-4 mb-1 text-left text-[11px] text-slate-500 hover:text-slate-300">Keyboard shortcuts <kbd>?</kbd></button>
         <p className="px-4 py-3 text-[11px] leading-snug text-slate-500">

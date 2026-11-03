@@ -54,11 +54,35 @@ test("case → evidence → ALEAPP job → artifacts → audit", async ({ page }
   await sections.getByRole("link", { name: "Timeline" }).click();
   await expect(page.getByLabel("Events")).toContainText("Hello from the synthetic fixture");
 
+  // assistant (scripted local model in the e2e server)
+  await sections.getByRole("link", { name: "Assistant" }).click();
+  await expect(page.getByText(/Local model/)).toBeVisible();
+  await page.getByRole("button", { name: "Summarise the case" }).click();
+  await expect(page.getByText("Messages found")).toBeVisible();
+  await page.getByTitle("Open cited artifact").first().click();
+  await expect(page.getByLabel("Artifact details")).toContainText("message");
+  await page.getByText(/tool steps/).click();
+  await expect(page.getByText("search_artifacts", { exact: false }).first()).toBeVisible();
+
+  // SQL tab empty state
+  await sections.getByRole("link", { name: "SQL" }).click();
+  await expect(page.getByText(/No databases extracted yet/)).toBeVisible();
+
   // command palette global search
   await page.keyboard.press("Control+k");
   await page.getByLabel("Search cases, views and artifacts").fill("Offset honoured");
   await expect(page.getByRole("option", { name: /Offset honoured/ })).toBeVisible();
   await page.keyboard.press("Escape");
+
+  // settings
+  await page.getByRole("link", { name: "Settings" }).click();
+  await page.getByLabel(/Name recorded/).fill("E2E Examiner");
+  await page.getByRole("button", { name: "Save" }).first().click();
+  await expect(page.getByRole("status")).toContainText("Examiner saved");
+  await page.getByRole("button", { name: "Test connection" }).click();
+  await expect(page.getByText(/Connected/)).toBeVisible();
+  await page.goBack();
+  await page.goBack();
 
   // report
   const download = page.waitForEvent("download");
