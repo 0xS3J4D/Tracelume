@@ -1,0 +1,1 @@
+[{"Offset": 1, "Proto": "TCPv4", "LocalAddr": "10.0.0.5", "LocalPort": 49812, "ForeignAddr": "203.0.113.9", "ForeignPort": 443, "State": "ESTABLISHED", "PID": 2044, "Owner": "chrome.exe", "Created": "2024-05-01T09:30:00+00:00", "__children": []}]

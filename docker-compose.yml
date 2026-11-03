@@ -75,6 +75,14 @@ services:
     profiles: ["tools"]
     build: ./plugins/sqlite_recover
     image: tracelume/sqlite-recover:0.1.0
+  plaso:
+    profiles: ["tools"]
+    build: ./plugins/plaso
+    image: tracelume/plaso:0.1.0
+  volatility3:
+    profiles: ["tools"]
+    build: ./plugins/volatility3
+    image: tracelume/volatility3:0.1.0
 
   # Optional local LLM for the case assistant:  ./tracelume ai
   # Runs on the internal network only; models are downloaded by the launcher, not by this service.
