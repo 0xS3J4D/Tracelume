@@ -26,7 +26,7 @@ def case_with_db(client: TestClient, tmp_path: Path, monkeypatch: pytest.MonkeyP
     con.commit()
     con.close()
 
-    def run(plugin, settings, ev_rel, out_rel, ctx, on_line):  # type: ignore[no-untyped-def]
+    def run(plugin, settings, ev_rel, out_rel, ctx, on_line, *_):  # type: ignore[no-untyped-def]
         src = settings.evidence_dir / ev_rel
         subprocess.run(
             [sys.executable, "-I", str(CARVER), str(src), str(settings.workspace_dir / out_rel)],

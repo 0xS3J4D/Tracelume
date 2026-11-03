@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { api, fmtUtc, type Artifact, type Note, type Tag } from "../api";
+import { useNavigate } from "react-router-dom";
+import { api, fmtBytes, fmtUtc, type Artifact, type Note, type Tag } from "../api";
 
 /** Right-hand detail panel: provenance, tags, notes and raw data. */
 export default function ArtifactDetail({
@@ -15,6 +16,7 @@ export default function ArtifactDetail({
   const [newTag, setNewTag] = useState("");
   const [note, setNote] = useState("");
   const tagRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
   const noteRef = useRef<HTMLTextAreaElement>(null);
   const id = artifact?.id;
 
@@ -69,6 +71,19 @@ export default function ArtifactDetail({
         <dt className="text-slate-400">Source path</dt><dd className="break-all font-mono">{artifact.source_path ?? "—"}</dd>
         <dt className="text-slate-400">Artifact ID</dt><dd className="break-all font-mono text-slate-500">{artifact.id}</dd>
       </dl>
+
+      {artifact.source_plugin === "sleuthkit" && artifact.data.kind === "file" && !artifact.data.recovered_file && (
+        <button className="btn-primary" onClick={async () => navigate(`/jobs/${(await api.recover(artifact.id)).id}`)}>
+          {artifact.data.deleted ? "Recover deleted file content" : "Extract file content"}
+        </button>
+      )}
+      {typeof artifact.data.recovered_file === "string" && (
+        <div className="rounded-md border border-ink-700 p-3 text-xs">
+          <p className="mb-2 text-slate-300">{fmtBytes(Number(artifact.data.size ?? 0))} · SHA-256 <span className="font-mono">{String(artifact.data.sha256 ?? "")}</span></p>
+          <a className="btn-primary" href={`/api/jobs/${artifact.job_id}/files/${artifact.data.recovered_file}`} download>Download recovered file</a>
+          <p className="mt-2 text-slate-500">Downloads are hashed and recorded in the audit log.</p>
+        </div>
+      )}
 
       <section aria-labelledby="tags-h">
         <h3 id="tags-h" className="label">Tags <kbd className="ml-1 text-slate-500">t</kbd></h3>

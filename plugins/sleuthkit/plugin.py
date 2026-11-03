@@ -7,6 +7,8 @@ Times are Unix epoch seconds (UTC). Deleted names end in " (deleted)" or " (dele
 
 from __future__ import annotations
 
+import json
+import re
 from collections.abc import Iterable, Iterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -86,8 +88,37 @@ class SleuthKitPlugin(Plugin):
     image: ClassVar[str] = "tracelume/sleuthkit:0.1.0"
 
     def build_command(self, ctx: RunContext) -> list[str]:
-        return ["python", "/opt/tsk_run.py", str(ctx.evidence_path), str(ctx.output_dir)]
+        cmd = ["python", "/opt/tsk_run.py", str(ctx.evidence_path), str(ctx.output_dir)]
+        if ctx.params.get("mode") == "extract":
+            p = ctx.params
+            if (
+                not re.fullmatch(r"[0-9]+(-[0-9]+){0,2}", str(p.get("inode", "")))
+                or not str(p.get("offset", "0")).isdigit()
+            ):
+                raise ValueError("invalid inode or offset")
+            cmd += [
+                "extract",
+                str(p.get("offset", "0")),
+                str(p["inode"]),
+                Path(str(p.get("name", "recovered.bin"))).name,
+            ]
+        return cmd
 
     def parse_output(self, ctx: RunContext) -> Iterable[ArtifactIn]:
+        meta_path = ctx.output_dir / "recovered" / "recovered.json"
+        if meta_path.exists():
+            meta = json.loads(meta_path.read_text())
+            yield ArtifactIn(
+                type="file_entry",
+                title=f"Recovered file content: {ctx.params.get('path', meta['name'])}",
+                source_path=str(ctx.params.get("path") or meta["name"]),
+                data={
+                    **meta,
+                    "recovered_file": f"recovered/{meta['name']}",
+                    "from_artifact": ctx.params.get("artifact_id"),
+                    "deleted": bool(ctx.params.get("deleted")),
+                },
+            )
+            return
         for body in sorted(ctx.output_dir.glob("vol_*.body")):
             yield from parse_bodyfile(body)

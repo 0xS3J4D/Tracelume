@@ -17,6 +17,7 @@ def run_in_docker(
     output_rel: str,
     ctx: RunContext,
     on_line: Callable[[str], None],
+    cancelled: Callable[[], bool] = lambda: False,
 ) -> int:
     import docker
     from docker.types import Mount
@@ -67,10 +68,23 @@ def run_in_docker(
         labels={"tracelume.job": output_rel},
         detach=True,
     )
+    import threading
+
+    stop = threading.Event()
+
+    def watch() -> None:
+        while not stop.wait(2.0):
+            if cancelled():
+                on_line("[tracelume] cancellation requested — stopping tool container")
+                container.kill()
+                return
+
+    threading.Thread(target=watch, daemon=True).start()
     try:
         for raw in container.logs(stream=True, follow=True):
             on_line(raw.decode("utf-8", "replace").rstrip("\n"))
         result = container.wait()
         return int(result.get("StatusCode", 1))
     finally:
+        stop.set()
         container.remove(force=True)

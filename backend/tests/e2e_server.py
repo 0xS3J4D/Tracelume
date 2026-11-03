@@ -29,7 +29,7 @@ from tracelume import jobs  # noqa: E402
 FIXTURE = REPO / "plugins/aleapp/tests/fixtures"
 
 
-def fake(plugin, settings, ev_rel, out_rel, ctx, on_line):  # type: ignore[no-untyped-def]
+def fake(plugin, settings, ev_rel, out_rel, ctx, on_line, *_):  # type: ignore[no-untyped-def]
     on_line(f"[fake] {' '.join(plugin.build_command(ctx))}")
     shutil.copytree(FIXTURE, settings.workspace_dir / out_rel, dirs_exist_ok=True)
     return 0

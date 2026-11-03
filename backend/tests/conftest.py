@@ -45,7 +45,7 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
 def fake_runner(monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
     calls: list[list[str]] = []
 
-    def run(plugin, settings, ev_rel, out_rel, ctx, on_line):  # type: ignore[no-untyped-def]
+    def run(plugin, settings, ev_rel, out_rel, ctx, on_line, *_):  # type: ignore[no-untyped-def]
         calls.append(plugin.build_command(ctx))
         on_line("fake tool running")
         shutil.copytree(ALEAPP_FIXTURE, settings.workspace_dir / out_rel, dirs_exist_ok=True)
