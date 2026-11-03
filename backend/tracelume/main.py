@@ -23,7 +23,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
+    from tracelume.security import LocalOnlyMiddleware
+
     app = FastAPI(title="Tracelume", version=__version__, lifespan=lifespan)
+    app.add_middleware(LocalOnlyMiddleware)
     app.include_router(router)
     app.include_router(workspace.router)
     app.include_router(assistant_api.router)

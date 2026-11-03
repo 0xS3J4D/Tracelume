@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     examiner: str = "examiner"
     # Registry prefix for tool images: "ghcr.io/0xs3j4d" -> ghcr.io/0xs3j4d/tracelume/aleapp
     image_registry: str = ""
+    # Host names the UI may be reached under (DNS-rebinding protection); "*" disables the check
+    allowed_hosts: str = "localhost,127.0.0.1,::1,api,testserver"
     # Docker volume names, used when the worker runs inside compose.
     evidence_volume: str | None = None
     workspace_volume: str | None = None
