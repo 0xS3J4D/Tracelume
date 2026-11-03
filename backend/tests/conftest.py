@@ -34,6 +34,8 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
     from sqlmodel import SQLModel
 
     SQLModel.metadata.drop_all(get_engine())
+    with get_engine().begin() as conn:
+        conn.exec_driver_sql("DROP TABLE IF EXISTS alembic_version")
     get_engine().dispose()
     get_settings.cache_clear()
     get_engine.cache_clear()
