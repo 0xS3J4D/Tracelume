@@ -54,7 +54,10 @@ timeline** that you can tag, annotate and report on. The audit log is tamper-evi
 | ![](docs/screenshots/timeline.png) | ![](docs/screenshots/sql.png) | ![](docs/screenshots/map.png) |
 
 ## Install
-Requirements: **Docker Desktop** (Windows/macOS) or **Docker Engine 26+** (Linux), 8 GB RAM, and disk space for your evidence.
+Works on **Windows 10/11, macOS (Intel and Apple Silicon) and Linux**. Requirements: **Docker
+Desktop** (Windows/macOS) or **Docker Engine 26+** (Linux), 8 GB RAM, and disk space for your
+evidence. On Apple Silicon the forensic tool images run through Docker Desktop's x86 emulation
+(they work, but are slower).
 
 ```bash
 git clone https://github.com/0xS3J4D/tracelume && cd tracelume
