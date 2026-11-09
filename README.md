@@ -12,12 +12,6 @@ offline.</p>
 <img alt="status" src="https://img.shields.io/badge/version-0.1.0-f59e0b">
 </p>
 
-<p align="center">
-<a href="DONATE.md#bitcoin"><img alt="Donate Bitcoin" src="https://img.shields.io/badge/Donate-Bitcoin-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white"></a>
-<a href="DONATE.md#ethereum"><img alt="Donate Ethereum" src="https://img.shields.io/badge/Donate-Ethereum-627EEA?style=for-the-badge&logo=ethereum&logoColor=white"></a>
-<a href="DONATE.md#monero"><img alt="Donate Monero" src="https://img.shields.io/badge/Donate-Monero-FF6600?style=for-the-badge&logo=monero&logoColor=white"></a>
-</p>
-
 <p align="center"><img src="docs/screenshots/demo.gif" alt="Tracelume demo: create a case, add a phone dump, run all analyses, review recovered messages, timeline and SQL" width="900"></p>
 
 Tracelume puts the open source forensic tools you already trust behind **one case and one
@@ -112,27 +106,8 @@ the results, including anything the AI assistant says. There is no warranty (GPL
 15–16). The wrapped tools keep their own licences, and some, such as MVT's, add conditions of use;
 see [CREDITS.md](CREDITS.md).
 
-## Support Tracelume
-Tracelume is free and always will be. Donations fund development time, test phones and disks,
-and keeping parsers current with every new Android and iOS release.
-
-<table align="center">
-<tr>
-<td align="center" width="33%"><a id="bitcoin"></a><img src="docs/donate/bitcoin.svg" width="150" alt="Bitcoin QR code"><br><img alt="Bitcoin" src="https://img.shields.io/badge/Bitcoin-F7931A?style=flat-square&logo=bitcoin&logoColor=white"></td>
-<td align="center" width="33%"><a id="ethereum"></a><img src="docs/donate/ethereum.svg" width="150" alt="Ethereum QR code"><br><img alt="Ethereum" src="https://img.shields.io/badge/Ethereum-627EEA?style=flat-square&logo=ethereum&logoColor=white"></td>
-<td align="center" width="33%"><a id="monero"></a><img src="docs/donate/monero.svg" width="150" alt="Monero QR code"><br><img alt="Monero" src="https://img.shields.io/badge/Monero-FF6600?style=flat-square&logo=monero&logoColor=white"></td>
-</tr>
-</table>
-
-| | Address |
-|---|---|
-| **BTC** | `bc1q2tvwg0mupr2xf0g2chux4ycp35dvmczwu0pd6u` |
-| **ETH** (+ ERC-20) | `0x7ec1e0C2048338b7109F83Cfde98360399237129` |
-| **XMR** | `82u5eB81AkS9ZGy1BsUF5qGZVVPFt7XBr8c65sPStBHLWbPw4Pr86awaSpwSHzEZzSWrkyv4LiTync1w2muoY37gTacd5Wq` |
-
-<sub>Only send each coin on its own network. Always check addresses against [DONATE.md](DONATE.md) in this repository; maintainers will never DM you an address.</sub>
-
-Not into crypto? Star the repo, report bugs, or [contribute](CONTRIBUTING.md). That helps just as much.
+## Contributing
+Star the repo, report bugs or send a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits and licence
 Tracelume stands on the work of many open source authors. See [CREDITS.md](CREDITS.md).
