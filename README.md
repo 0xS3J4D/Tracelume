@@ -137,3 +137,6 @@ Not into crypto? Star the repo, report bugs, or [contribute](CONTRIBUTING.md). T
 ## Credits and licence
 Tracelume stands on the work of many open source authors. See [CREDITS.md](CREDITS.md).
 Licensed under **GPL-3.0-or-later**.
+
+---
+<p align="center"><sub>Part of <a href="https://github.com/0xS3J4D">0xS3J4D</a>'s security portfolio</sub></p>
